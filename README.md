@@ -301,4 +301,47 @@ Las variables en *application.properties* pueden ser utilizadas directamente e
 
 
 
+# 05-Arquitectura por capas orientada al dominio en Java
+
+Creado: 12 de agosto de 2025 16:01
+ítem principal: 01-INTRODUCCIÓN A SPRING BOOT (https://www.notion.so/01-INTRODUCCI-N-A-SPRING-BOOT-248f5b42f77080fc87b5eb31d84c2f3f?pvs=21)
+
+Organizar correctamente un proyecto desde el inicio es crucial para asegurar la claridad, el mantenimiento y la escalabilidad de cualquier aplicación en crecimiento. En este material aprenderás paso a paso cómo establecer una estructura por capas, orientada al dominio, que mejora la responsabilidad y visibilidad del código en aplicaciones modernas.
+
+## **¿Qué es una arquitectura de proyecto por capas y orientada al dominio?**
+
+Una **arquitectura por capas** **divide la aplicación en distintas áreas de responsabilidad**. Esto facilita tanto la legibilidad como el crecimiento del sistema. La **orientación al dominio** significa que el núcleo de la aplicación estará claramente definido, separando la lógica de negocio de otros componentes.
+
+### ¿Cuáles son los paquetes principales y su función en esta organización?
+
+- **Dominio (domain):** Aquí se sitúa todo el núcleo (core) de la aplicación. Contiene reglas y servicios de negocio esenciales.
+- Dentro del dominio, se recomienda crear a su vez un subpaquete `domain.service` para las interfaces de servicios, como `PlatziAIService`.
+- **Web:** En este paquete se encuentra la capa encargada de recibir y procesar solicitudes externas, generalmente controladores.
+- Es útil agregar un subpaquete `web.controller` para concentrar todos los controladores del proyecto, por ejemplo, la clase `HelloController`.
+- **Persistence:** Aquí estará toda la comunicación con la base de datos, manejando el acceso y la persistencia de datos. Es común crear este paquete aunque inicialmente se encuentre vacío.
+
+### ¿Cómo organizar las clases y archivos existentes según esta estructura?
+
+1. **Mover los controladores:** Ubica las clases controladoras, como `HelloController`, dentro del subpaquete `web.controller`.
+2. **Organizar servicios de dominio:** Arrastra las interfaces y servicios relevantes al subpaquete `domain.service`.
+3. **Actualizar imports automáticamente:** IDEs como IntelliJ ayudan a modificar los imports y referencias de paquetes cuando se reorganizan archivos.
+4. **Mantener la clase ejecutora:** La clase principal, como `PlatziPlay`, debe quedar en la raíz del paquete base, ya que es responsable de lanzar la aplicación.
+
+## **¿Qué ventajas tiene esta estructura al trabajar en equipo o en proyectos grandes?**
+
+- **Separación clara de responsabilidades** ayuda a que múltiples desarrolladores trabajen en paralelo sin interferir entre sí.
+- **Mejor mantenimiento y legibilidad**, facilitando encontrar y modificar componentes específicos.
+- **Facilidad para escalar**, ya que la organización permite agregar nuevas funcionalidades o modificar las existentes con menor riesgo de errores.
+
+## **¿Cómo practicar y validar que la estructura funciona correctamente?**
+
+Una vez realizado el cambio de estructura: - Modifica las rutas para que los controladores respondan en los endpoints deseados, como `/hello` en vez de la raíz (`/`). - Lanza la aplicación y prueba en el navegador la nueva ruta para verificar el correcto funcionamiento.
+
+## **¿Por qué elegir esta arquitectura versus otras?**
+
+No existe un único tipo de arquitectura "correcta" para todos los contextos. La elección depende del tipo de aplicación, el equipo, la infraestructura y necesidades específicas. La arquitectura por capas orientada al dominio, sin embargo, es ampliamente aceptada por su claridad y eficacia en aplicaciones medianas o grandes.
+
+Ahora que tu proyecto tiene una base estructural sólida, el siguiente paso será conectar tu aplicación a una base de datos usando Docker y Postgres. Si te interesa profundizar más, también existen cursos especializados sobre arquitecturas en la misma plataforma. ¿Te gustaría compartir cómo estructuras tus proyectos o cuáles paquetes consideras imprescindibles?
+
+
 
