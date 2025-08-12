@@ -1,13 +1,14 @@
 package com.example.platzi_play;
 
 import dev.langchain4j.service.UserMessage;
+import dev.langchain4j.service.V;
 import dev.langchain4j.service.spring.AiService;
 
 @AiService
 public interface PlatziPlayAiService {
 
     @UserMessage(
-            "Genera un saludo a la plataforma de Gestión de Películas PlatziPlay.Usa menos de 120 caracteres y hazlo con el estilo de Platzi"
+            "Genera un saludo a la plataforma de Gestión de Películas {{plataform}}.Usa menos de 120 caracteres y hazlo con el estilo de Platzi"
     )
-    String generateGreeting();
+    String generateGreeting(@V("plataform") String plataform);
 }

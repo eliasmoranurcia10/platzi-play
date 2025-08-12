@@ -1,0 +1,304 @@
+# 01-¿Qué es Spring y por qué es tan popular?
+
+Creado: 6 de agosto de 2025 23:04
+ítem principal: 01-INTRODUCCIÓN A SPRING BOOT (https://www.notion.so/01-INTRODUCCI-N-A-SPRING-BOOT-248f5b42f77080fc87b5eb31d84c2f3f?pvs=21)
+
+El framework Java Spring ha revolucionado la forma en que creamos aplicaciones backend, convirtiéndose en el estándar de la industria por excelentes razones. Con su enfoque moderno y eficiente, Spring permite a los desarrolladores construir servicios robustos y APIs escalables mientras mantiene la esencia que ha hecho grande a Java: su confiabilidad y capacidad para manejar entornos de alta demanda. Descubre por qué tantos profesionales confían en Spring para sus proyectos más exigentes.
+
+## **¿Por qué Spring se ha convertido en el framework más popular de Java?**
+
+Spring se ha posicionado como el framework predilecto en el ecosistema Java gracias a su capacidad para **simplificar el desarrollo backend** sin sacrificar potencia. Su popularidad radica en varios factores clave:
+
+- **Desarrollo ágil y limpio**: Permite escribir menos código centrándose en lo que realmente importa.
+- **Robustez inherente**: Mantiene las características de confiabilidad que han hecho de Java un lenguaje empresarial por excelencia.
+- **Escalabilidad probada**: Funciona eficientemente en entornos de alto rendimiento y demanda.
+- **Aplicaciones autocontenidas**: Las aplicaciones SpringBoot se configuran, ejecutan y despliegan por sí mismas.
+
+Esta combinación de factores ha llevado a que **7 de cada 10 desarrolladores backend de Java** utilicen SpringBoot en sus proyectos. No es una tendencia pasajera, sino que se ha establecido como un estándar de facto en la industria.
+
+### ¿Qué empresas de clase mundial confían en Spring?
+
+El poder y la eficiencia de Spring se refleja en su adopción por gigantes tecnológicos que manejan cargas de trabajo extraordinarias:
+
+- **Netflix**: Utiliza Spring para gestionar su infraestructura de streaming.
+- **Amazon**: Implementa servicios Spring en partes críticas de su ecosistema.
+- **Spotify**: Confía en Spring para procesar millones de peticiones diarias de streaming musical.
+
+Estas empresas, junto con muchas otras, utilizan Spring para construir **sistemas capaces de procesar millones de peticiones diarias**, demostrando su capacidad para operar a escala masiva sin comprometer el rendimiento.
+
+### ¿Cómo ha transformado Spring el desarrollo backend?
+
+Spring y SpringBoot no solo han cambiado cómo escribimos código en Java, sino que han **transformado fundamentalmente la forma en que conceptualizamos el desarrollo backend**. Este cambio de paradigma incluye:
+
+- **Enfoque en la productividad**: Menos tiempo configurando, más tiempo resolviendo problemas de negocio.
+- **Arquitectura moderna**: Facilita la implementación de microservicios y arquitecturas distribuidas.
+- **Integración simplificada**: Conexión sencilla con bases de datos, servicios externos y otras tecnologías.
+- **Despliegue simplificado**: Las aplicaciones SpringBoot contienen todo lo necesario para ejecutarse, incluido el servidor web.
+
+Este enfoque ha revolucionado el desarrollo en Java, permitiendo crear soluciones modernas que responden a las necesidades actuales del mercado.
+
+## **¿Qué aprenderás en este curso de Spring?**
+
+A lo largo de este curso, aprenderás a construir una API completa en Java utilizando Spring, siguiendo un enfoque práctico y profesional. El recorrido incluirá:
+
+- Construcción paso a paso de una API limpia y robusta
+- Implementación de buenas prácticas de desarrollo
+- Integración de inteligencia artificial como herramienta de apoyo
+- Preparación del proyecto para entornos de producción reales
+
+El objetivo no es simplemente enseñar un framework, sino **desarrollar habilidades para crear backends con propósito, fundamento y calidad**. Este enfoque práctico te permitirá comprender los conceptos esenciales mientras construyes soluciones que funcionan en escenarios del mundo real.
+
+Spring ha transformado el panorama de desarrollo en Java, ofreciendo una combinación perfecta de agilidad y robustez que ha cautivado tanto a desarrolladores individuales como a grandes corporaciones. Si buscas dominar una tecnología con alta demanda en el mercado y capacidad para construir soluciones escalables, este curso te dará las bases para empezar tu camino. ¿Ya utilizas Spring en tus proyectos o será tu primera experiencia con este poderoso framework? ¡Comparte tu experiencia en los comentarios!
+
+
+# 02-Configuración inicial de proyecto Spring Boot con Java 21
+
+Creado: 11 de agosto de 2025 23:53
+ítem principal: 01-INTRODUCCIÓN A SPRING BOOT (https://www.notion.so/01-INTRODUCCI-N-A-SPRING-BOOT-248f5b42f77080fc87b5eb31d84c2f3f?pvs=21)
+
+Comenzar a construir una API robusta y moderna en Java es más sencillo hoy gracias a herramientas como Spring Boot e IntelliJ IDEA. Aquí aprenderás a crear paso a paso tu base de proyecto empleando tecnologías actualizadas, asegurando así un entorno de desarrollo óptimo y productivo para servicios RESTful.
+
+## **¿Qué necesitas para iniciar con Spring Boot y cómo preparar el entorno?**
+
+Antes de iniciar, asegúrate de tener **conocimientos previos en Java** y de contar con el **JDK versión 21** instalado en tu equipo. Si aún no lo tienes, IntelliJ IDEA te permite descargarlo e instalarlo fácilmente desde el propio editor. IntelliJ IDEA de JetBrains es reconocido por su soporte completo para Java y sus herramientas impulsadas por inteligencia artificial para mejorar la experiencia de desarrollo.
+
+Para probar tu API, necesitarás el navegador y **Postman**, ideal para pruebas avanzadas de servicios. Además, utilizarás **Docker** para levantar una instancia de **PostgreSQL** para la base de datos. Si ya tienes PostgreSQL instalado, puedes usar tu propia configuración sin complicaciones.
+
+## **¿Cómo crear un nuevo proyecto Spring Boot paso a paso?**
+
+- Dirígete a *start.spring.io*, la plataforma oficial Spring Initializer.
+- Elige la configuración sugerida: **proyecto Gradle, lenguaje Java, versión 3.5.3 de Spring Boot**.
+- Establece el grupo como `com.platzi` y el artefacto como `Platzi Play`.
+- Especifica que el objetivo del proyecto es una plataforma de gestión de películas donde podrás consultar, actualizar y agregar títulos.
+- Usa `com.platzi.play` como nombre de paquete y selecciona el empaquetado **JAR** para aprovechar el servidor embebido.
+- Selecciona la dependencia **Spring Web** para crear servicios RESTful apoyados por Spring MVC y el servidor embebido Apache Tomcat.
+
+Explora la estructura que generará la herramienta, incluyendo el archivo `build.gradle` y la carpeta `src` para tu código fuente. Haz clic en **Generar** para descargar el archivo `.zip` y descomprímelo en una ubicación fácilmente accesible: evita usar la carpeta de descargas para prevenir borrados accidentales.
+
+## **¿Cómo abrir y preparar el proyecto en IntelliJ IDEA?**
+
+Abre IntelliJ IDEA y selecciona **Open** para cargar la carpeta descomprimida del proyecto. Al ubicar el archivo `build.gradle`, elige abrirlo como proyecto, lo que permitirá gestionar automáticamente todas las dependencias.
+
+Verifica que el proyecto esté corriendo con Java 21 desde los ajustes del módulo (Open Module Settings) en el SDK. Dentro del paquete `com.platzi.play`, encontrarás la clase `PlatziPlayApplication` con el método principal *main*, encargado de iniciar la aplicación Java.
+
+Ejecuta tu aplicación desde IntelliJ; verás en la consola que el servicio Tomcat inicia rápidamente y la aplicación está disponible en el puerto 8080. Al ingresar a *localhost:8080* desde el navegador, verás un mensaje de error 404, lo cual indica que tu servidor responde correctamente, aunque aún no hay endpoints activos.
+
+Este entorno autocontenido hace innecesarias configuraciones complejas o la instalación en servidores externos, agilizando la puesta en marcha de APIs modernas en Java. ¿Quieres compartir tu experiencia inicial configurando Spring Boot o tienes dudas sobre algún paso? ¡Tu comentario es bienvenido para fortalecer la comunidad de desarrolladores!
+
+
+# 03-Crear un endpoint REST con Spring Boot e integrarlo con IA usando LangChain4j
+
+Creado: 12 de agosto de 2025 9:39
+ítem principal: 01-INTRODUCCIÓN A SPRING BOOT (https://www.notion.so/01-INTRODUCCI-N-A-SPRING-BOOT-248f5b42f77080fc87b5eb31d84c2f3f?pvs=21)
+
+Domina cómo **crear un endpoint REST en Java con Spring Boot** y **potenciarlo rápidamente con inteligencia artificial utilizando LangChain4j**. Aquí exploramos paso a paso cómo lograr que tu aplicación responda a peticiones y, además, integre respuestas impulsadas por IA usando OpenAI, todo dentro de un entorno organizado y moderno como IntelliJ IDEA.
+
+## **¿Cómo crear un endpoint REST en Java con Spring Boot?**
+
+Primero, asegúrate de tener tu proyecto cargado y corriendo en IntelliJ IDEA; si puedes ver una respuesta desde el navegador, vas por buen camino.
+
+- Debes crear una nueva clase llamada `HelloController` dentro del paquete `com.platzi.play`.
+- Anota la clase con `@RestController`, lo que le indica a Spring Boot que aceptará y gestionará peticiones HTTP.
+- Agrega un método que retorne, por ejemplo, *Hello world*. Usa la anotación `@GetMapping` para especificar que este método responderá a peticiones GET.
+- Si accedes desde el navegador al endpoint raíz, obtendrás la respuesta definida, por ejemplo: “Hola mundo, Hello world”.
+
+Así queda tu primer endpoint operativo en un proyecto Java con Spring Boot.
+
+## **¿Cómo integrar inteligencia artificial a un proyecto Spring Boot con LangChain4j?**
+
+El siguiente paso es **sumar inteligencia artificial a tu proyecto**. Para esto, sigue estos puntos:
+
+- Usa la librería `LangChain4j`, especialmente diseñada para conectar APIs de inteligencia artificial con tus servicios Java.
+- Busca la documentación oficial de LangChain4j y agrega sus dependencias en el archivo `build.gradle`. Incluye las dependencias para OpenAI y Spring Boot usando la versión 1.0.0-beta1, que permite el uso de una demo API key gratuita.
+
+    ```groovy
+    // https://docs.langchain4j.dev/tutorials/spring-boot-integration
+        implementation 'dev.langchain4j:langchain4j-open-ai-spring-boot-starter:1.3.0-beta9'
+        implementation 'dev.langchain4j:langchain4j-spring-boot-starter:1.3.0-beta9'
+    ```
+
+- Refresca el proyecto Gradle para descargar e instalar las dependencias.
+- En el archivo `application.properties` dentro de la carpeta Resources, configura los parámetros necesarios para LangChain4j:
+
+    ```
+    langchain4j.open-ai.chat-model.api-key=demo
+    langchain4j.open-ai.chat-model.model-name=gpt-4o-mini
+    langchain4j.open-ai.chat-model.base-url=http://langchain4j.dev/demo/openai/v1
+    ```
+
+
+Esto habilita a tu aplicación para procesar solicitudes de IA fácilmente.
+
+## **¿Cómo crear y consumir un servicio de inteligencia artificial personalizado en Spring Boot?**
+
+- Crea una nueva **interface** llamada `PlatziPlayAIService`.
+- Anótala con `@AIServices` para indicar que será usada como servicio de IA.
+- En la interface, añade un método llamado `generateGreeting` anotado con `@UserMessage`. Usa triple comilla para definir el prompt: pide un saludo de bienvenida, con menos de 120 caracteres y el estilo de Platzi.
+
+    ```java
+    @AiService
+    public interface PlatziPlayAiService {
+    
+        @UserMessage(
+                "Genera un saludo a la plataforma de Gestión de Películas PlatziPlay.Usa menos de 120 caracteres y hazlo con el estilo de Platzi"
+        )
+        String generateGreeting();
+    }
+    ```
+
+- Llegó el momento de integrar este servicio al `HelloController`. Decláralo como `final`, agréga una instancia en el constructor para permitir la inyección por Spring.
+- Modifica el endpoint para que retorne la respuesta de `generateGreeting()` en vez de *Hello world*.
+
+    ```java
+    @RestController
+    public class HelloController {
+        @Autowired
+        public final PlatziPlayAiService aiService;
+    
+        public HelloController(PlatziPlayAiService aiService) {
+            this.aiService = aiService;
+        }
+    
+        @GetMapping("/")
+        public String hello() {
+            return this.aiService.generateGreeting();
+        }
+    }
+    ```
+
+- Relanza la aplicación, accede al endpoint y visualiza un saludo personalizado generado por OpenAI; cada petición puede recibir un mensaje diferente.
+
+¿Te imaginas otros casos de uso para esta integración? ¿Qué otras funciones de IA podrías probar con LangChain4j? Comparte tus ideas en los comentarios y sigue explorando el potencial de estas herramientas.
+
+
+# 04-Configuración de application.properties y perfiles en Spring Boot
+
+Creado: 12 de agosto de 2025 14:25
+ítem principal: 01-INTRODUCCIÓN A SPRING BOOT (https://www.notion.so/01-INTRODUCCI-N-A-SPRING-BOOT-248f5b42f77080fc87b5eb31d84c2f3f?pvs=21)
+
+Configurar correctamente el archivo *application.properties* es esencial para personalizar y controlar el comportamiento de una aplicación Spring Boot. Aquí aprenderás cómo gestionar distintos entornos, definir variables clave y sacar el máximo provecho a los perfiles en tus proyectos.
+
+## **¿Cómo se utilizan application.properties y perfiles en Spring para configurar la aplicación?**
+
+El archivo *application.properties* **centraliza la configuración en una app Spring Boot.** Permite establecer desde el *API key* y el modelo usado con librerías como LangChain4j, hasta aspectos cruciales como el puerto del servidor o el contexto de la URL.
+
+- Puedes definir parámetros como `server.port` para cambiar el puerto (por ejemplo, a 8090).
+- Para cambiar el contexto raíz, se usa `server.servlet.contextPath` (e.g., `/platzi-play/api`).
+- Los cambios se reflejan tras reiniciar la aplicación, afectando cómo y dónde responde tu API.
+
+    ```
+    # Perfil por defecto que tiene que usar cuando se lance la aplicacion
+    spring.profiles.active=dev
+    
+    # Nombre y la ruta de contexto de la aplicacion
+    spring.application.name=Cinema TV First
+    server.servlet.context-path=/platzi-play/api
+    
+    # LangChain4j
+    langchain4j.open-ai.chat-model.model-name=gpt-4o-mini
+    ```
+
+
+## **¿Qué ventajas ofrecen los diferentes archivos de propiedades para cada entorno?**
+
+Spring permite tener múltiples archivos de configuración según ambiente: desarrollo, pruebas o producción. Esto se gestiona creando archivos como `application-dev.properties` o `application-prod.properties` dentro del directorio *resources*.
+
+- Cada archivo puede contener variables específicas solo para ese entorno.
+- El archivo principal (`application.properties`) mantiene las configuraciones generales.
+- Se activa un perfil con la propiedad `spring.profiles.active`, por ejemplo, `dev` o `prod`, para que Spring use ese archivo.
+
+    ```
+    # Perfil por defecto que tiene que usar cuando se lance la aplicacion
+    spring.profiles.active=dev
+    ```
+
+- Así puedes, por ejemplo, habilitar logs detallados solo en desarrollo y desactivarlos en producción.
+
+## **¿Cómo se acceden y utilizan las variables de configuración en el código Spring?**
+
+Las variables en *application.properties* pueden ser utilizadas directamente en el código de la aplicación a través de la anotación `@Value`.
+
+- Por ejemplo, puedes inyectar el nombre de la aplicación usando `@Value("${spring.application.name}")` en el constructor de tu controlador.
+
+    ```java
+    @RestController
+    public class HelloController {
+    		// Inyección de la variable que contendrá el nombre de la aplicación
+    		// Ubicado en *application.properties*
+        private final String plataform;
+        public final PlatziPlayAiService aiService;
+    
+        public HelloController(
+    				    // Inyección del nombre de la aplicación
+                @Value("${spring.application.name}") String plataform,
+                PlatziPlayAiService aiService
+        ) {
+            this.plataform = plataform;
+            this.aiService = aiService;
+        }
+    
+        @GetMapping("/")
+        public String hello() {
+    		    // La variable es tomada como parámetro
+            return this.aiService.generateGreeting(plataform);
+        }
+    }
+    ```
+
+- Así se evita "quemar" valores en el código y permite una gestión centralizada y flexible.
+
+    ```java
+    @AiService
+    public interface PlatziPlayAiService {
+    		// la variable es utilizada mediante 2 llaves {{parametro}}
+        @UserMessage(
+                "Genera un saludo a la plataforma de Gestión de Películas {{plataform}}.Usa menos de 120 caracteres y hazlo con el estilo de Platzi"
+        )
+        String generateGreeting(@V("plataform") String plataform);
+    }
+    ```
+
+- Cambios en las variables del properties se reflejan al reiniciar la app, mostrando los resultados, por ejemplo, en las respuestas de la API.
+
+  ![image.png](image.png)
+
+
+## **¿Cómo se configuran logs y otros parámetros específicos según el entorno?**
+
+- En el archivo `application-dev.properties` puedes agregar parámetros para mostrar logs de request y response, permitiendo ver internamente cómo opera una librería como LangChain4j.
+
+    ```
+    # Puerto de Ambiente de desarrollo
+    server.port=8090
+    
+    # LangChain4j
+    langchain4j.open-ai.chat-model.api-key=demo
+    langchain4j.open-ai.chat-model.base-url=http://langchain4j.dev/demo/openai/v1
+    
+    # logs de reguests y response
+    langchain4j.open-ai.chat-model.log-requests=true
+    langchain4j.open-ai.chat-model.log-responses=true
+    
+    # Mirar lo que realiza LangChain4j
+    logging.level.dev.langchain4j=DEBUG
+    logging.level.dev.openai4j=DEBUG
+    ```
+
+- En producción, se recomienda minimizar los logs para evitar exponer información sensible o saturar la consola.
+
+    ```
+    # Puerto de Ambiente de desarrollo
+    server.port=8080
+    
+    # LangChain4j
+    langchain4j.open-ai.chat-model.api-key=demo
+    langchain4j.open-ai.chat-model.base-url=http://langchain4j.dev/demo/openai/v1
+    ```
+
+- Cada entorno puede personalizar el nivel de logueo y otros detalles de configuración según sea necesario.
+
+¿Has explorado ya la documentación oficial de Spring sobre propiedades de configuración? Comparte tu experiencia o pregunta sobre situaciones específicas que hayas enfrentado usando perfiles y properties en tus proyectos.
+
+
+
+
