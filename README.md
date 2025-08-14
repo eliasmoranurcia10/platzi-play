@@ -345,3 +345,104 @@ Ahora que tu proyecto tiene una base estructural sólida, el siguiente paso ser�
 
 
 
+# 06-Conexión de Spring Boot con PostgreSQL usando Docker
+
+Creado: 14 de agosto de 2025 10:00
+ítem principal: 01-INTRODUCCIÓN A SPRING BOOT (https://www.notion.so/01-INTRODUCCI-N-A-SPRING-BOOT-248f5b42f77080fc87b5eb31d84c2f3f?pvs=21)
+
+¿Quieres aprender cómo integrar **Spring Boot** con **PostgreSQL** de forma eficiente? Aquí exploramos cómo conectar tu API de Spring Boot a una base de datos moderna usando *Docker*, siguiendo prácticas estándar en la industria. Este proceso te permitirá manejar bases de datos de manera fácil, rápida y sin complicaciones de instalación manual.
+
+## **¿Cómo utilizar Docker para bases de datos en desarrollo Spring Boot?**
+
+Docker es una herramienta que ejecuta aplicaciones en **contenedores**. Estos entornos son livianos, portables y garantizan que todo funcione igual en cualquier máquina. Al usar Docker, puedes iniciar una base PostgreSQL "limpia" dentro de un contenedor, facilitando su administración y, cuando sea necesario, eliminarla sin afectar el resto de tu sistema.
+
+- **Asegúrate de tener Docker o Docker Desktop instalado.**
+- Si ya tienes PostgreSQL local, puedes conectarte sin contenedor; los pasos son similares, solo omitiendo Docker.
+
+## **¿Qué dependencias debes agregar a tu proyecto para conectar Spring Boot y PostgreSQL?**
+
+En *start.spring.io* (Spring Initializr), busca y añade estas dependencias esenciales:
+
+- **Spring Data JPA:** Para acceder y manipular tus datos fácilmente.
+- **Driver de PostgreSQL:** Hace posible la conexión entre tu aplicación y la base de datos.
+- **Docker Compose:** Disponible desde Spring Boot 3.1, detecta y gestiona automáticamente los contenedores necesarios en desarrollo.
+
+Agrega estas dependencias en tu archivo `build.gradle`. Recuerda refrescar Gradle para que descargue todos los paquetes y construya el entorno correctamente.
+
+## **¿Cómo configurar Docker Compose para PostgreSQL con persistencia de datos?**
+
+Spring Initializr genera un archivo `compose.yaml` con la configuración básica de la base de datos. Debes ajustarlo para asegurar que los datos persistan entre reinicios y la gestión sea sencilla:
+
+- Usar la propiedad **restart: unless-stopped** para reinicios automáticos solo si el contenedor se apaga por error.
+- Mapear correctamente el puerto local (`5432:5432`).
+- Definir un **volumen pgdata** en `data/postgres` para que la información no se borre después de cada reinicio.
+- Ajustar las variables de entorno, como el nombre de la base de datos, usuario y contraseña.
+
+Al final, importa el volumen para asegurar la persistencia, y verifica que la configuración apunte a la imagen más reciente de PostgreSQL.
+
+```yaml
+services:
+  postgres:
+    image: 'postgres:latest'
+    restart: unless-stopped
+    environment:
+      - 'POSTGRES_DB=platzi_play_db'
+      - 'POSTGRES_PASSWORD=root'
+      - 'POSTGRES_USER=postgres'
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/data/postgres
+
+volumes:
+  pgdata:
+```
+
+## **¿Cómo conectar Spring Boot al contenedor de PostgreSQL?**
+
+Ve a `src/main/resources` y configura las propiedades necesarias:
+
+- **spring.datasource.driver-class-name:** `org.postgresql.Driver`
+- **spring.datasource.url:** `jdbc:postgresql://localhost:5432/platzi_play_db`
+- **spring.datasource.username:** el usuario que configuraste en Docker Compose (por ejemplo, `postgres`).
+- **spring.datasource.password:** la contraseña elegida (por ejemplo, `Alejandro.Platzi`).
+
+Guarda estos datos en un archivo de configuración general para que estén disponibles en todo tu entorno de desarrollo.
+
+En [application.properties](http://application.properties) se agrega:
+
+```
+# Nombre del driver PostgreSQL
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+```
+
+En [application-dev.properties](http://application-dev.properties) se agrega:
+
+```
+# Spring Data JPA
+spring.datasource.url=jdbc:postgresql://localhost:5432/platzi_play_db
+spring.datasource.username=postgres
+spring.datasource.password=root
+```
+
+## **¿Cómo verificar la conexión y administrar la base de datos?**
+
+1. **Inicia Docker** si aún no está corriendo.
+2. **Ejecuta tu aplicación Spring Boot:** detectará que el contenedor de PostgreSQL está listo y se conectará automáticamente. Si es la primera vez, descargará la imagen; las siguientes veces será mucho más rápido.
+3. **Supervisa el contenedor** en Docker; deberías ver un contenedor con el nombre asignado (por ejemplo, `Platzi play`).
+
+Para administrar la base:
+
+- Puedes usar programas como **DataGrip**, **PgAdmin** o cualquier otro cliente de PostgreSQL.
+- Crea un nuevo *data source* usando la URL, usuario y contraseña que configuraste.
+- Prueba la conexión desde tu programa para confirmar que todo está en orden.
+
+Cuando la conexión es exitosa, tu base de datos estará lista para su uso, aunque inicialmente no tenga tablas; eso se realizará en los siguientes pasos del desarrollo.
+
+## **¿Qué sigue después de la integración?**
+
+Con la base ya conectada, el siguiente paso será crear una **entity** en tu proyecto. Al hacerlo, Spring Boot generará automáticamente la tabla correspondiente en la base de datos, permitiendo trabajar con datos reales y persistentes. ¿Ya probaste tu integración? Cuéntanos tu experiencia en los comentarios.
+
+
+
