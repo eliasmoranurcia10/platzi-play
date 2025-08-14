@@ -446,3 +446,103 @@ Con la base ya conectada, el siguiente paso será crear una **entity** en tu p
 
 
 
+# 07-Crear entidad con anotaciones JPA para tabla de base de datos
+
+Creado: 14 de agosto de 2025 16:51
+ítem principal: 01-INTRODUCCIÓN A SPRING BOOT (https://www.notion.so/01-INTRODUCCI-N-A-SPRING-BOOT-248f5b42f77080fc87b5eb31d84c2f3f?pvs=21)
+
+En el desarrollo de aplicaciones Java con acceso a bases de datos, entender cómo se construye una entidad (*entity*) y se conecta a una tabla es esencial para un código limpio y mantenible. Gracias a las anotaciones de JPA presentes en Spring Data JPA, el proceso resulta directo y muy flexible. A continuación se resume cómo definir una entidad desde cero, estableciendo el puente entre el modelo de tu aplicación y la base de datos bajo mejores prácticas y tips reales del entorno profesional.
+
+## **¿Qué es una entidad en Java y cómo se asocia con una tabla?**
+
+Una **entidad** representa una tabla de la base de datos, mientras que los atributos de la clase corresponden a columnas. Utilizando las anotaciones de JPA, se define:
+
+- Con `@Entity` se marca la clase para que JPA la reconozca.
+- Con `@Table(name = "nombre_tabla")` se especifica el nombre exacto de la tabla.
+
+Esto facilita que el código refleje fielmente la estructura de la base de datos, incluso cuando el nombre de las columnas esté en español o provenga de esquemas heredados.
+
+## **¿Cómo se estructura y anota una clase entidad en un proyecto Java?**
+
+El primer paso es crear un paquete `entity` dentro de tu carpeta de persistencia y una clase, por ejemplo, *MovieEntity*. Se agregan atributos que coinciden con las columnas esperadas:
+
+- `private Long id;` como identificador primario.
+- `private String título;` para el nombre de la película.
+- `private Integer duración;` de la película, permitiendo nulos si es necesario.
+- `private String género;` con longitud máxima configurada.
+- `private LocalDate fechaEstreno;` para almacenar día, mes y año.
+- `private BigDecimal clasificación;` respetando precisión y escala para decimales.
+- `private String estado;` para indicar disponibilidad: D/N.
+
+Mediante anotaciones de columna (`@Column`) se establecen restricciones y características:
+
+- `nullable = false` asegura que el campo no sea nulo.
+- `length` o `precision` y `scale` limitan la cantidad de caracteres o decimales.
+- `unique = true` garantiza unicidad en valores clave como el título.
+
+La clave primaria se marca como `@Id` y se genera automáticamente usando `@GeneratedValue(strategy = GenerationType.IDENTITY)`, lo que asegura que el identificador no se repita.
+
+Los *getters* y *setters* se pueden generar automáticamente (o con la librería *Lombok* para mayor simpleza), permitiendo manipular los datos de manera segura y práctica.
+
+```java
+@Getter
+@Setter
+@AllArgsConstructor
+@Builder
+@Entity
+@Table(name = "platzi_play_peliculas")
+public class MovieEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, length = 150, unique = true)
+    private String titulo;
+
+    // precision = 3 -> numero de maximo 3 caracteres
+    @Column(nullable = false, precision = 3)
+    private Integer duracion;
+
+    @Column(nullable = false, length = 40)
+    private String genero;
+
+    @Column(name = "fecha_estreno")
+    private LocalDate fechaEstreno;
+
+    // precision = 3 -> numero de maximo 3 caracteres, scale = 2 -> maximo 2 decimales
+    @Column(precision = 3, scale = 2)
+    private BigDecimal clasificacion;
+
+    @Column(nullable = false, length = 1)
+    private String estado;
+    
+}
+```
+
+## **¿Cómo se crea y sincroniza la tabla desde la configuración de Spring?**
+
+Si la tabla aún no existe en la base de datos, Spring puede crearla automáticamente para fines de desarrollo y pruebas. En el archivo `application-dev.properties`, se agregan las siguientes configuraciones:
+
+- `spring.jpa.hibernate.ddl-auto=update`: actualiza el esquema según sea necesario.
+- `spring.jpa.show-sql=true`: muestra en consola las operaciones SQL que ejecuta la aplicación.
+- `spring.jpa.properties.hibernate.format_sql=true`: formatea el SQL para facilitar la lectura.
+
+Al reiniciar la aplicación, Spring detecta si la tabla está ausente y la crea junto con las restricciones definidas. Si ya existe, no realiza cambios adicionales. Puedes verificar la creación y contenido usando herramientas visuales de base de datos o ejecutando un *select* sobre la tabla.
+
+En [aplication-dev.properties](http://aplication-dev.properties) :
+
+```
+# Crear una tabla en la base de datos según sea necesario
+spring.jpa.hibernate.ddl-auto=update
+# Muestra en consola lo que esta haciendo con la base de datos
+spring.jpa.show-sql=true
+# Colocar formato a los resultados
+spring.jpa.properties.hibernate.format_sql=true
+```
+
+## **¿Qué sigue después de definir una entidad básica en Java?**
+
+Tras vincular entidad y tabla, el siguiente paso es implementar funcionalidades CRUD (crear, leer, actualizar, borrar) utilizando repositorios de Spring. Esto permite manejar los registros mediante operaciones encapsuladas y seguras sin necesidad de escribir consultas SQL complejas. ¡Explora más para gestionar relaciones entre entidades y aprovechar otras anotaciones de JPA!
+
+
