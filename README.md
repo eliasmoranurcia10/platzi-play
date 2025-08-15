@@ -546,3 +546,102 @@ spring.jpa.properties.hibernate.format_sql=true
 Tras vincular entidad y tabla, el siguiente paso es implementar funcionalidades CRUD (crear, leer, actualizar, borrar) utilizando repositorios de Spring. Esto permite manejar los registros mediante operaciones encapsuladas y seguras sin necesidad de escribir consultas SQL complejas. ¡Explora más para gestionar relaciones entre entidades y aprovechar otras anotaciones de JPA!
 
 
+# 08-Repositorios CRUD con Spring Data sin escribir SQL
+
+Creado: 14 de agosto de 2025 22:58
+ítem principal: 02-PERSISTENCIA CON SPRING DATA Y MODELADO DE DATOS (https://www.notion.so/02-PERSISTENCIA-CON-SPRING-DATA-Y-MODELADO-DE-DATOS-248f5b42f77080d2ab73ea6269bffed0?pvs=21)
+
+Trabajar con bases de datos en Java es mucho más eficiente gracias a **Spring Data y sus repositorios**. En este material, aprenderás cómo implementar operaciones CRUD completas sin escribir SQL manualmente, junto con la forma recomendada de cargar datos de prueba usando Spring.
+
+## **¿Cómo se configuran los repositorios para CRUD en Spring Data?**
+
+**Spring Data permite implementar operaciones CRUD extendiendo una interfaz llamada `CrudRepository`.** Solo necesitas indicar el nombre de la *entity* y el tipo de su clave primaria. Por ejemplo, utilizar `CrudRepository<MovieEntity, Long>` te da acceso a los métodos esenciales para manipular registros.
+
+- Puedes crear, leer, actualizar y eliminar datos desde Java directamente.
+- Spring automáticamente genera e implementa todos los métodos estándar de CRUD.
+- No es necesario programar consultas SQL para operaciones sencillas.
+
+La extensión adecuada del repositorio conserva tus *entities* ordenadas dentro de paquetes, siguiendo la estructura que recomienda Spring para proyectos escalables.
+
+persistence > crud > CrudMovieEntity
+
+```java
+public interface CrudMovieEntity extends CrudRepository<MovieEntity, Long> {
+}
+```
+
+## **¿Qué operaciones CRUD están disponibles en el repositorio?**
+
+Al extender de `CrudRepository`, obtienes acceso inmediato a métodos útiles como:
+
+- Guardar un registro o una lista completa.
+- Buscar por clave primaria.
+- Verificar la existencia de un registro por su ID.
+- Obtener todos los registros almacenados.
+- Encontrar varios registros por una lista de IDs.
+- Contar los registros guardados en la tabla.
+- Eliminar por ID o por la entidad completa.
+
+Esto facilita el manejo de datos y permite enfocarse en la lógica de negocio sin distraerse escribiendo SQL.
+
+## **¿Cómo se cargan datos iniciales con Data.sql en Spring?**
+
+Para trabajar con ejemplos reales desde el principio, es recomendable **cargar datos de prueba con un archivo `data.sql`**:
+
+- El archivo debe ubicarse en la raíz de la carpeta `Resources` y llamarse exactamente `data.sql` para que Spring lo reconozca.
+- Utiliza sentencias `insert into` para agregar registros; se recomienda utilizar `on conflict do nothing` para evitar errores por duplicados.
+- Si alguna columna o atributo está mal escrita en el archivo o la entidad, se mostrará un error al arrancar la aplicación. Revisa los nombres cuidadosamente.
+
+    ```sql
+    INSERT INTO platzi_play_peliculas (titulo, duracion, genero, clasificacion, fecha_estreno, estado)
+    VALUES ('Shrek', 90, 'ANIMADA', NULL, '2024-06-01', 'D')
+        ON CONFLICT (titulo) DO NOTHING;
+    
+    INSERT INTO platzi_play_peliculas (titulo, duracion, genero, clasificacion, fecha_estreno, estado)
+    VALUES ('Inception', 148, 'CIENCIA_FICCION', NULL, '2010-07-16', 'D')
+        ON CONFLICT (titulo) DO NOTHING;
+    
+    INSERT INTO platzi_play_peliculas (titulo, duracion, genero, clasificacion, fecha_estreno, estado)
+    VALUES ('Titanic', 195, 'DRAMA', 4.6, '1997-12-19', 'D')
+        ON CONFLICT (titulo) DO NOTHING;
+    
+    INSERT INTO platzi_play_peliculas (titulo, duracion, genero, clasificacion, fecha_estreno, estado)
+    VALUES ('John Wick', 101, 'ACCION', NULL, '2014-10-24', 'D')
+        ON CONFLICT (titulo) DO NOTHING;
+    
+    INSERT INTO platzi_play_peliculas (titulo, duracion, genero, clasificacion, fecha_estreno, estado)
+    VALUES ('El Conjuro', 112, 'TERROR', 3.0, '2013-07-19', 'D')
+        ON CONFLICT (titulo) DO NOTHING;
+    
+    INSERT INTO platzi_play_peliculas (titulo, duracion, genero, clasificacion, fecha_estreno, estado)
+    VALUES ('Coco', 105, 'ANIMADA', 4.7, '2017-10-27', 'D')
+        ON CONFLICT (titulo) DO NOTHING;
+    
+    INSERT INTO platzi_play_peliculas (titulo, duracion, genero, clasificacion, fecha_estreno, estado)
+    VALUES ('Interstellar', 169, 'CIENCIA_FICCION', 5.0, '2014-11-07', 'D')
+        ON CONFLICT (titulo) DO NOTHING;
+    
+    INSERT INTO platzi_play_peliculas (titulo, duracion, genero, clasificacion, fecha_estreno, estado)
+    VALUES ('Joker', 122, 'DRAMA', NULL, '2019-10-04', 'D')
+        ON CONFLICT (titulo) DO NOTHING;
+    
+    INSERT INTO platzi_play_peliculas (titulo, duracion, genero, clasificacion, fecha_estreno, estado)
+    VALUES ('Toy Story', 81, 'ANIMADA', 4.5, '1995-11-22', 'D')
+        ON CONFLICT (titulo) DO NOTHING;
+    
+    INSERT INTO platzi_play_peliculas (titulo, duracion, genero, clasificacion, fecha_estreno, estado)
+    VALUES ('Avengers: Endgame', 181, 'ACCION', 3.9, '2019-04-26', 'D')
+        ON CONFLICT (titulo) DO NOTHING;
+    ```
+
+
+Además, debes agregar la siguiente configuración en el archivo de propiedades para asegurar que los datos siempre se carguen: Se debe agregar al archivo: [application-dev.properties](http://application-dev.properties)
+
+`spring.sql.init.mode=always`
+
+Así, cada vez que inicies tu aplicación, Spring revisa si los datos deben inicializarse, pero gracias a `on conflict do nothing`, no sobrescribe datos ni arroja errores si ya existen.
+
+¿Te animas a practicar con repositorios y cargar tus propios datos iniciales? Cuéntanos cómo vas aplicando estos conceptos o si necesitas orientación al crear tus primeras consultas en Spring Data.
+
+
+
