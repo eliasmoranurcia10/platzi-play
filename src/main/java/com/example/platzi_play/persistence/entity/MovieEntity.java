@@ -11,8 +11,6 @@ import java.time.LocalDate;
 
 @Getter
 @Setter
-@AllArgsConstructor
-@Builder
 @Entity
 @Table(name = "platzi_play_peliculas")
 public class MovieEntity {

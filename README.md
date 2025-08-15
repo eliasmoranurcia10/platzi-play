@@ -487,8 +487,6 @@ Los *getters* y *setters* se pueden generar automáticamente (o con la libre
 ```java
 @Getter
 @Setter
-@AllArgsConstructor
-@Builder
 @Entity
 @Table(name = "platzi_play_peliculas")
 public class MovieEntity {
@@ -642,6 +640,62 @@ Además, debes agregar la siguiente configuración en el archivo de propiedades 
 Así, cada vez que inicies tu aplicación, Spring revisa si los datos deben inicializarse, pero gracias a `on conflict do nothing`, no sobrescribe datos ni arroja errores si ya existen.
 
 ¿Te animas a practicar con repositorios y cargar tus propios datos iniciales? Cuéntanos cómo vas aplicando estos conceptos o si necesitas orientación al crear tus primeras consultas en Spring Data.
+
+
+
+# 09-Creación de endpoints GET en Spring Boot para consultar películas
+
+Creado: 15 de agosto de 2025 14:55
+ítem principal: 02-PERSISTENCIA CON SPRING DATA Y MODELADO DE DATOS (https://www.notion.so/02-PERSISTENCIA-CON-SPRING-DATA-Y-MODELADO-DE-DATOS-248f5b42f77080d2ab73ea6269bffed0?pvs=21)
+
+Crear un backend eficiente y moderno implica exponer información de forma sencilla y segura. Una de las tareas más comunes es crear servicios HTTP que permitan consultar datos, guardar registros o eliminar información utilizando métodos como GET, POST o DELETE. Aquí te explicamos, paso a paso, cómo realizar una petición GET para consultar todas las películas almacenadas en tu base de datos usando Spring Boot.
+
+## **¿Cómo crear un endpoint GET en Spring Boot para listar películas?**
+
+Para que tu aplicación pueda mostrar todas las películas, es necesario implementar un **endpoint GET** en un controlador especial. Se recomienda nombrar la clase como *MovieController* dentro del paquete de controladores web. Usa la anotación **@RestController** para indicar que los métodos en esta clase serán expuestos a través de la API.
+
+- Crea un método que regrese una lista del objeto *MovieEntity*.
+- El método debe consultar las películas del CRUD creado anteriormente.
+- Declara la variable *crudMovieEntity* como final, porque no cambiará tras inicializarse.
+- Inicializa *crudMovieEntity* en el **constructor**. Spring Boot se encarga de pasar la dependencia correcta automáticamente.
+- Para obtener todas las películas, utiliza el método **findAll** de *crudMovieEntity*. Este retorna un *Iterable*, por lo que se debe convertir (cast) a una *List*.
+- Añade la anotación **@GetMapping("/movies")** para que Spring entienda que se trata de una solicitud GET y el recurso será accesible en */movies*.
+
+    ```java
+    @RestController
+    public class MovieController {
+    
+        private final CrudMovieEntity crudMovieEntity;
+    
+        public MovieController(CrudMovieEntity crudMovieEntity) {
+            this.crudMovieEntity = crudMovieEntity;
+        }
+    
+        @GetMapping("/movies")
+        public List<MovieEntity> getAll() {
+            return (List<MovieEntity>) this.crudMovieEntity.findAll();
+        }
+    }
+    ```
+
+
+## **¿Qué se muestra al consumir el endpoint GET de películas?**
+
+Una vez implementado y reiniciada la aplicación, puedes consumir el servicio desde un navegador web. Al acceder a la ruta */movies*, verás un listado de todas las películas en formato **JSON**, un estándar ampliamente usado para intercambiar información.
+
+Los datos de cada película incluyen: - ID (clave primaria). - Título. - Duración. - Género. - Fecha de estreno. - Clasificación (promedio de calificaciones dentro de la plataforma). - Estado.
+
+Puedes visualizarlo de manera más ordenada usando herramientas que formatean JSON para mayor legibilidad.
+
+## **¿Cómo probar el endpoint GET con Postman y por qué funciona automáticamente?**
+
+Para verificar el correcto funcionamiento del endpoint, puedes usar *Postman*, una herramienta ideal para probar servicios API sin escribir código adicional. Solo necesitas:
+
+1. Crear una petición GET hacia la URL correspondiente (por ejemplo, *localhost:8090/play/api/movies*).
+2. Enviar la solicitud y observarás las películas recuperadas, presentadas en un formato claro y visual.
+3. Notarás que todo esto ocurre sin haber escrito código específico de conexión a la base de datos ni creado instancias manualmente.
+
+Esto es posible gracias a que Spring Boot gestiona las dependencias y la inyección de objetos automáticamente. Así, tu código permanece limpio y enfocado en la lógica del negocio, sin preocuparte por detalles de infraestructura.
 
 
 
