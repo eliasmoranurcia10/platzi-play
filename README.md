@@ -757,4 +757,126 @@ En el ejemplo del `MovieController`, se utiliza la inyección de dependencias p
 
 
 
+# 11-Separación de dominio y persistencia con DTOs en Java
+
+Creado: 16 de agosto de 2025 10:05
+ítem principal: 03-BUENAS PRÁCTICAS EN DISEÑO DE APIS (https://www.notion.so/03-BUENAS-PR-CTICAS-EN-DISE-O-DE-APIS-248f5b42f77080278ae7d55a6c91df5e?pvs=21)
+
+Una API robusta, limpia y preparada para cambios necesita una arquitectura sólida. ¿Por qué? Porque un código acoplado a la base de datos limita la evolución y expone detalles que deberían permanecer internos. Aquí exploramos cómo estructurar adecuadamente una API de películas en Java usando buenas prácticas, enfocándonos en la introducción de la capa de dominio y el uso del patrón Data Mapper.
+
+## **¿Cómo afecta el acoplamiento entre controlador y base de datos el diseño de tu API?**
+
+Actualmente, **el controlador llama directamente al CRUD del Movie Entity**, exponiendo la estructura interna de la base de datos. Esto implica varios riesgos:
+
+- **Alto acoplamiento**: cualquier cambio en la base de datos puede romper la API fácilmente.
+- **Exposición de datos sensibles o innecesarios**: al no filtrar la salida, pueden aparecer campos indeseados.
+- **Mezcla de idiomas**: el endpoint es /movies pero el contenido de la respuesta está en español.
+
+Estos problemas hacen que la API sea **difícil de mantener, frágil y dependiente** de la estructura interna de la base de datos.
+
+## **¿Por qué es clave separar responsabilidades entre capas en una API?**
+
+**Separar responsabilidades** permite que cada parte del sistema cumpla una función clara y focalizada. Dejar fuera la capa de dominio va contra los principios de una buena arquitectura. Con una correcta separación:
+
+- Cada capa conoce solo lo necesario de las demás.
+- La evolución de una capa no obliga a reescribir las otras.
+- La lógica de dominio es independiente de la infrastructura técnica.
+
+**El patrón Data Mapper** ayuda a lograr esto separando el modelo de dominio de cómo se expone en la API o se almacena en la base de datos.
+
+## **¿Cómo implementar Movie DTO y Movie Repository siguiendo buenas prácticas?**
+
+1. **Definir el Movie DTO (Data Transfer Object):**
+2. Se crea dentro del paquete `domain.dto`.
+3. Usando *Java record* se obtiene una clase inmutable adecuada para representar los datos expuestos.
+4. Ejemplo de atributos:
+    - String title (en inglés, consistente con la API)
+    - Integer duration
+    - String genre
+    - LocalDate releaseDate
+    - Double rating
+
+    ```java
+    public record MovieDto(
+            String title,
+            Integer duration,
+            String genre,
+            LocalDate releaseData,
+            Double rating
+    ) {
+    
+    }
+    ```
+
+5. **Crear la interfaz Movie Repository:**
+6. Ubicada dentro del paquete `domain.repository`.
+7. Define el método `getAll`, que retorna una lista de MovieDTO.
+8. Permite **desacoplar la lógica del acceso a la base de datos**.
+
+    ```java
+    public interface MovieRepository {
+        List<MovieDto> getAll();
+    }
+    ```
+
+9. **Implementar Movie Service:**
+10. Ubicada en el paquete `service`.
+11. Se anota con *@Service* para participación en el ecosistema Spring.
+12. Recibe por inyección la interfaz MovieRepository.
+13. Expone el método `getAll`, que internamente usa la interfaz y retorna los MovieDTO.
+
+    ```java
+    @Service
+    public class MovieService {
+    
+        private final MovieRepository movieRepository;
+    
+        public MovieService(MovieRepository movieRepository) {
+            this.movieRepository = movieRepository;
+        }
+    
+        public List<MovieDto> getAll() {
+            return this.movieRepository.getAll();
+        }
+    }
+    ```
+
+14. **Actualizar el Movie Controller:**
+15. Ahora inyecta MovieService en vez del CRUD directamente.
+16. Expone el endpoint de películas solicitando la lista a MovieService, ya desacoplada del Entity o CRUD.
+
+    ```java
+    @RestController
+    public class MovieController {
+    
+        private final MovieService movieService;
+    
+        public MovieController(MovieService movieService) {
+            this.movieService = movieService;
+        }
+    
+        @GetMapping("/movies")
+        public List<MovieDto> getAll() {
+            return this.movieService.getAll();
+        }
+    }
+    ```
+
+
+## **¿Qué ventajas aporta esta nueva estructura a tu API?**
+
+- **Reduce la dependencia directa de la base de datos.**
+- Los cambios internos (estructura, nombres o tipo de base) no afectan el contrato público de la API.
+- **Facilita la evolución y el mantenimiento.**
+- Permite cumplir con convenciones internacionales en endpoints y respuestas.
+
+## **¿Qué sigue para perfeccionar la capa de persistencia?**
+
+Aún falta adaptar la capa de persistencia para que devuelva **MovieDTO** en vez de MovieEntity. Además, se mencionó el uso de *map struct* para transformar entre entidades y DTOs y así seguir manteniendo un dominio limpio y desacoplado.
+
+¿Te gustaría saber cómo implementar la conversión entre entidades y DTOs usando map struct? ¡Comparte tus dudas o comenta tu experiencia en proyectos similares!
+
+
+
+
 
