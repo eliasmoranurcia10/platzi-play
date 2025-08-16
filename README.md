@@ -879,4 +879,112 @@ Aún falta adaptar la capa de persistencia para que devuelva **MovieDTO** en v
 
 
 
+# 12-Configuración de MapStruct con Spring para convertir entidades a DTO
+
+Creado: 16 de agosto de 2025 14:36
+ítem principal: 03-BUENAS PRÁCTICAS EN DISEÑO DE APIS (https://www.notion.so/03-BUENAS-PR-CTICAS-EN-DISE-O-DE-APIS-248f5b42f77080278ae7d55a6c91df5e?pvs=21)
+
+Optimiza el desarrollo en Java usando *Spring* y *Mapstruct* para transformar entidades a DTO de forma sencilla y limpia. Esta guía destaca cómo estructurar código escalable, claro y mantenible en la capa de persistencia de una aplicación basada en Spring.
+
+## **¿Qué problema resuelve Mapstruct al convertir entidades en DTO en Java con Spring?**
+
+Al trabajar en aplicaciones empresariales, suele ser necesario separar las entidades de base de datos (*MovieEntity*) y los objetos de transferencia de datos (*MovieDTO*). Usar Mapstruct permite convertir de forma automática y sin esfuerzo manual entre estos dos tipos, logrando:
+
+- **Desacoplar** la lógica de persistencia de la lógica de dominio y de presentación.
+- **Evitar errores** y simplificar el código al eliminar transformaciones manuales.
+- Mantener el código limpio y preparado para cambios futuros en el modelo de datos.
+
+## **¿Cómo se configura Mapstruct en un proyecto Spring con Gradle?**
+
+https://mapstruct.org/documentation/installation/
+
+Mapstruct se integra fácilmente añadiendo sus dependencias en el archivo *build.gradle*. Basta agregar la línea de la dependencia principal junto a la del *annotation processor* recomendado para proyectos Gradle. Ordenar y comentar las dependencias es útil para mantener claridad sobre los paquetes incluidos, como se mostró junto a las de *Spring Data JPA*.
+
+```groovy
+// MapStruct
+    implementation 'org.mapstruct:mapstruct:1.6.3'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
+```
+
+## **¿Cómo crear un repositorio que devuelva DTO usando Mapstruct?**
+
+Se crea una clase llamada **MovieEntityRepository** en la raíz de la capa de persistencia. Sus principales pasos:
+
+- Implementa la interfaz *MovieRepository* y anota la clase con `@Repository` para permitir la inyección vía Spring.
+- Recibe como dependencia un objeto *CRUD* y el propio *MovieMapper* en el constructor.
+- Implementa el método *getAll*, el cual regresa una lista de *MovieDTO*, no de entidades.
+
+    ```java
+    @Repository
+    public class MovieEntityRepository implements MovieRepository {
+    
+        private final CrudMovieEntity crudMovieEntity;
+        private final MovieMapper movieMapper;
+    
+        public MovieEntityRepository(CrudMovieEntity crudMovieEntity, MovieMapper movieMapper) {
+            this.crudMovieEntity = crudMovieEntity;
+            this.movieMapper = movieMapper;
+        }
+    
+        @Override
+        public List<MovieDto> getAll() {
+            return this.movieMapper.toDto(this.crudMovieEntity.findAll());
+        }
+    }
+    ```
+
+
+## **¿Cómo se define y configura el mapper con Mapstruct?**
+
+Al construir el mapeador personalizado:
+
+- Crear una interfaz *MovieMapper* en el paquete *persistence.mapper*, anotada con `@Mapper(componentModel = "spring")`.
+- Definir métodos usando reglas con `@Mapping`, especificando claramente el campo de origen (*source*) y de destino (*target*).
+- Por ejemplo:
+- source: *título*, target: *title*.
+- source: *duración*, target: *duration*.
+- y así sucesivamente para género, fecha de estreno y clasificación.
+- Para omitir campos innecesarios como *estado* o *ID*, simplemente no se declaran en las reglas.
+- El mapper puede aceptar tanto un solo objeto como listas o iterables, lo que flexibiliza el uso en el repositorio.
+
+    ```java
+    @Mapper(componentModel = "spring")
+    public interface MovieMapper {
+        @Mapping(source = "titulo", target = "title")
+        @Mapping(source = "duracion", target = "duration")
+        @Mapping(source = "genero", target = "genre")
+        @Mapping(source = "fechaEstreno", target = "releaseData")
+        @Mapping(source = "clasificacion", target = "rating")
+        MovieDto toDto(MovieEntity entity);
+        List<MovieDto> toDto(Iterable<MovieEntity> entities);
+    }
+    ```
+
+
+## **¿Cómo se inyecta y utiliza el mapper en el repositorio?**
+
+El *MovieMapper* se inyecta en el repositorio y se usa directamente en el método *getAll* para convertir la lista que regresa el CRUD, asegurando que se devuelvan DTOs a las capas superiores. Todo el proceso es transparente:
+
+- El método utiliza `this.movieMapper.toDTO` sobre el resultado de `this.crudmoviedentity.findall`.
+- El resultado es una respuesta orientada al dominio, fácil de usar en la aplicación o exponer vía API.
+
+    ```java
+    @Override
+        public List<MovieDto> getAll() {
+            return this.movieMapper.toDto(this.crudMovieEntity.findAll());
+        }
+    ```
+
+
+## **¿Qué limitaciones tiene Mapstruct y cómo abordarlas?**
+
+Aunque Mapstruct hace muy sencillo el mapeo automático, hay escenarios donde se requiere más control:
+
+- Para tipos de datos no compatibles, como pasar de *Boolean* a *string* o de *string* a *enum*.
+- Se recomienda crear conversores personalizados para estos casos, aprovechando la extensibilidad de Mapstruct.
+
+¿Te gustaría compartir cómo configuras tus mapeos o si has enfrentado casos complejos con Mapstruct? Comenta tu experiencia y ayuda a otros a optimizar sus integraciones.
+
+
+
 
