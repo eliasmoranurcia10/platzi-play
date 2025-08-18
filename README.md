@@ -987,4 +987,120 @@ Aunque Mapstruct hace muy sencillo el mapeo automático, hay escenarios donde se
 
 
 
+# 13-Creación de conversores personalizados en MapStruct para enums y strings
+
+Creado: 17 de agosto de 2025 19:49
+ítem principal: 03-BUENAS PRÁCTICAS EN DISEÑO DE APIS (https://www.notion.so/03-BUENAS-PR-CTICAS-EN-DISE-O-DE-APIS-248f5b42f77080278ae7d55a6c91df5e?pvs=21)
+
+MapStruct potencia la conversión entre objetos en Java, pero en muchos casos los tipos de datos no coinciden exactamente. Dominar la creación de conversores personalizados es clave para asegurar que aplicaciones de backend gestionen correctamente enums, strings y valores booleanos, garantizando así robustez y claridad en el código de mapeo.
+
+## **¿Cómo manejar conversiones personalizadas en MapStruct para enums y strings?**
+
+En situaciones donde los tipos de datos del modelo de dominio y del DTO (Data Transfer Object) difieren, como un string en la base de datos que debe convertirse a un enum en la lógica de dominio, MapStruct requiere métodos de conversión personalizados.
+
+- Se crea un *enum* (por ejemplo, *Genre*) que defina posibles valores: action, comedy, drama, animated, horror, science fiction.
+- El DTO ahora utiliza este enum en vez de un string para mayor control y coherencia.
+
+Esto obliga a adaptar el mapeo, pues los valores guardados en el almacenamiento pueden diferir (por ejemplo, “animada” en la base de datos versus “animated” en el enum). El conversor personalizado soluciona esta diferencia.
+
+```java
+public enum Genre {
+    ACTION,
+    COMEDY,
+    DRAMA,
+    ANIMATED,
+    HORROR,
+    SCI_FI
+}
+```
+
+## **¿Cómo implementar un conversor personalizado para string y enum en Java?**
+
+El conversor personalizado consta de dos métodos estáticos. Uno convierte de string a enum, y el otro, de enum a string.
+
+- El método `stringToGenre` recibe el string de la base de datos y retorna el enum correspondiente tomando en cuenta las diferencias de nombres y mayúsculas/minúsculas.
+- Utiliza una estructura *switch* y verifica primero si el string recibido es nulo, en cuyo caso devuelve null.
+- Cada valor de string se asigna al valor correcto del enum (por ejemplo, "acción" a *action*, "animada" a *animated*).
+
+El método inverso, `genreToString`, sigue la misma lógica:
+
+- Recibe un valor enum y devuelve el string que almacena la base de datos.
+- También verifica si el valor es nulo y asigna los textos correctos según el caso.
+
+Ambos métodos deben anotarse con `@Named` de org.mapstruct para que el framework los reconozca y los aplique automáticamente al mapear campos específicos.
+
+```java
+public class GenreMapper {
+
+    @Named("stringToGenre")
+    public static Genre stringToGenre(String genero) {
+        if(genero == null) return null;
+
+        return switch (genero.toUpperCase()) {
+            case "ACCION" -> Genre.ACTION;
+            case "COMEDIA" -> Genre.COMEDY;
+            case "DRAMA" -> Genre.DRAMA;
+            case "ANIMADA" -> Genre.ANIMATED;
+            case "TERROR" -> Genre.HORROR;
+            case "CIENCIA_FICCION" -> Genre.SCI_FI;
+            default -> null;
+        };
+    }
+
+    @Named("genreToString")
+    public static String genreToString(Genre genre) {
+        if(genre == null) return null;
+
+        return switch (genre) {
+            case ACTION -> "ACCION";
+            case COMEDY -> "COMEDIA";
+            case DRAMA -> "DRAMA";
+            case ANIMATED -> "ANIMADA";
+            case HORROR -> "TERROR";
+            case SCI_FI -> "CIENCIA_FICCION";
+        };
+    }
+}
+```
+
+## **¿Cómo integrar el conversor personalizado en el mapper principal de MapStruct?**
+
+Para emplear los conversores dentro de MapStruct, se sigue este proceso:
+
+- Se indica en la anotación `@Mapper` del MovieMapper que utilizará la clase `GenreMapper` en su atributo `uses`.
+
+`uses = {GenreMapper.*class*}`
+- En el método de mapeo que convierte de entity a DTO, se especifica el uso del método personalizado mediante la propiedad `qualifiedByName`, usando el nombre del método anotado.
+
+De este modo, los campos de género se traducirán correctamente entre string y enum sin necesidad de lógica adicional fuera del mapper. El resultado es un código más limpio, claro y alineado con buenas prácticas.
+
+```java
+// Utilizará la clase GenreMapper en su atributo uses. 
+@Mapper(componentModel = "spring", uses = {GenreMapper.class})
+public interface MovieMapper {
+    @Mapping(source = "titulo", target = "title")
+    @Mapping(source = "duracion", target = "duration")
+    // Se especifica el uso del método personalizado 
+    // mediante la propiedad qualifiedByName, usando el nombre del método anotado.
+    @Mapping(source = "genero", target = "genre", qualifiedByName = "stringToGenre")
+    @Mapping(source = "fechaEstreno", target = "releaseData")
+    @Mapping(source = "clasificacion", target = "rating")
+    MovieDto toDto(MovieEntity entity);
+    List<MovieDto> toDto(Iterable<MovieEntity> entities);
+}
+```
+
+## **¿Cómo crear un conversor para otros tipos no compatibles, como string a boolean?**
+
+Se plantea el reto de extender este enfoque a otros campos, como un estado representado por una letra (“D” para disponible, “N” para no disponible) que debe convertirse en un valor booleano para el DTO y viceversa.
+
+- El método personalizado recibiría el string y retornaría `true` si es “D” y `false` en otro caso.
+- Este método también sería añadido con anotaciones `@Named` e integrado en el mapper principal usando `qualifiedByName`.
+
+Este patrón garantiza que cualquier diferencia entre los modelos se pueda resolver de forma centralizada y mantenible, haciendo el mejor uso de MapStruct para tipos de datos heterogéneos.
+
+¿Te animas a escribir tu propio conversor para el campo de estado o a comentar cómo resolverías un caso parecido en tu proyecto?
+
+
+
 
