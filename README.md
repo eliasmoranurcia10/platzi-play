@@ -1219,4 +1219,71 @@ El enfoque presentado facilita además el manejo de casos donde el recurso solic
 
 
 
+# 15-Códigos HTTP y Response Entity en APIs REST
+
+Creado: 18 de agosto de 2025 9:01
+ítem principal: 03-BUENAS PRÁCTICAS EN DISEÑO DE APIS (https://www.notion.so/03-BUENAS-PR-CTICAS-EN-DISE-O-DE-APIS-248f5b42f77080278ae7d55a6c91df5e?pvs=21)
+
+En el desarrollo backend, **responder con el código HTTP adecuado** es esencial para comunicar correctamente el resultado de cada petición en tu API. Esta práctica incrementa la claridad, profesionalismo y permite a clientes interpretar con precisión cada respuesta, conforme al estándar de la web.
+
+## **¿Qué son los códigos HTTP y por qué son importantes?**
+
+Los códigos HTTP son valores numéricos estándar que indican el resultado de una petición entre un cliente y un servidor.
+
+- El *200* muestra que la solicitud fue exitosa.
+- El *201* indica que se creó un recurso nuevo.
+- El *400* señala una petición incorrecta.
+- El *404* se refiere a recursos no encontrados.
+- El *500* marca errores internos del servidor.
+
+Utilizar estos códigos correctamente guía a quienes consumen tu API sobre lo que realmente ocurrió con cada solicitud. Así, tu backend envía respuestas precisas y profesionales.
+
+## **¿Cómo personalizar las respuestas de una API con Response Entity?**
+
+Al emplear la clase **Response Entity**, se gana control total sobre el contenido y código de cada respuesta. Por ejemplo, al buscar una película por ID:
+
+- Si el recurso existe, se devuelve con un *200* y el JSON correspondiente.
+- Si el recurso no está, lo adecuado es responder con un *404*.
+
+**Pasos clave en la implementación:**
+
+1. Cambia el tipo de retorno a `ResponseEntity<MovieDTO>` en el controlador.
+2. Busca la entidad por su ID y almacénala en una variable.
+3. Si el resultado es nulo, devuelve `ResponseEntity.notFound().build()`.
+4. Si existe, usa `ResponseEntity.ok(movieDTO)`.
+
+    ```java
+    @GetMapping("/{id}")
+    public ResponseEntity<MovieDto> getById(@PathVariable long id) {
+        MovieDto movieDto = this.movieService.getById(id);
+        if(movieDto == null) {
+           return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(movieDto);
+    }
+    ```
+
+
+Este patrón permite respuestas claras, acordes a la lógica de negocio, y mejora la experiencia para quienes interactúan con tu API.
+
+## **¿Cómo aplicar Response Entity para listas y otros métodos?**
+
+Cuando necesitas devolver listas u otro tipo de información, igual puedes beneficiarte de *Response Entity*:
+
+- Retorna `ResponseEntity<List<MovieDTO>>` en vez de solo una lista.
+- Usa `ResponseEntity.ok(listaDePeliculas)` para empaquetar la respuesta.
+
+    ```java
+    @GetMapping
+    public ResponseEntity<List<MovieDto>> getAll() {
+    		List<MovieDTO> listaDePeliculas = this.movieService.getAll()
+        return ResponseEntity.ok(listaDePeliculas);
+    }
+    ```
+
+
+Esto fortalece la coherencia y manejo de errores en todos los endpoints, haciendo el código más mantenible y robusto.
+
+¿Tienes dudas sobre códigos HTTP o el uso de Response Entity en tus proyectos? Comparte tus experiencias o preguntas para seguir aprendiendo juntos.
+
 
