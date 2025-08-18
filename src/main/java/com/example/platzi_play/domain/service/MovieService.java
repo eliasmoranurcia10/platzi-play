@@ -3,6 +3,7 @@ package com.example.platzi_play.domain.service;
 import com.example.platzi_play.domain.dto.MovieDto;
 import com.example.platzi_play.domain.repository.MovieRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 
@@ -17,5 +18,9 @@ public class MovieService {
 
     public List<MovieDto> getAll() {
         return this.movieRepository.getAll();
+    }
+
+    public MovieDto getById(long id) {
+        return this.movieRepository.getById(id);
     }
 }

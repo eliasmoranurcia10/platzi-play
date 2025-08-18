@@ -1103,4 +1103,120 @@ Este patrón garantiza que cualquier diferencia entre los modelos se pueda resol
 
 
 
+# 14-Captura de parámetros con @PathVariable en Spring Boot
+
+Creado: 17 de agosto de 2025 23:19
+ítem principal: 03-BUENAS PRÁCTICAS EN DISEÑO DE APIS (https://www.notion.so/03-BUENAS-PR-CTICAS-EN-DISE-O-DE-APIS-248f5b42f77080278ae7d55a6c91df5e?pvs=21)
+
+Las API modernas deben ser flexibles y escalables, permitiendo acceder tanto a colecciones completas de recursos como a elementos individuales de manera eficiente. Entender cómo implementar rutas dinámicas usando *@PathVariable* en Spring Boot es clave para construir servicios robustos y responder solicitudes personalizadas que optimicen la experiencia del usuario y la gestión de datos.
+
+## **¿Cómo se configuran rutas dinámicas para acceder a una sola película?**
+
+Las rutas dinámicas en los controladores permiten **capturar parámetros directamente desde la URL**, facilitando peticiones específicas como obtener una sola película por su identificador único. Al usar *@PathVariable*, el ID se toma automáticamente del path y se habilita el procesamiento específico del recurso dentro del método definido en el controlador.
+
+- **@GetMapping** se utiliza para definir la ruta.
+- Una estructura típica sería: *@GetMapping("/{id}")*, donde *id* es el parámetro dinámico.
+- La notación *@RequestMapping("/movies")* en el controlador estandariza el prefijo de las rutas, manteniendo el código ordenado y fácil de mantener.
+- El método asociado recibe el parámetro (ejemplo: *long id*) directamente desde la URL.
+
+    ```java
+    @RestController
+    @RequestMapping("/movies")
+    public class MovieController {
+    
+        private final MovieService movieService;
+    
+        public MovieController(MovieService movieService) {
+            this.movieService = movieService;
+        }
+    
+        @GetMapping
+        public List<MovieDto> getAll() {
+            return this.movieService.getAll();
+        }
+    
+        @GetMapping("/{id}")
+        public MovieDto getById(long id) {
+            return this.movieService.getById(id);
+        }
+    }
+    ```
+
+
+## **¿Para qué sirve el método getById en el repositorio y el servicio?**
+
+La lógica para **buscar una película** utilizando su identificador implica separar responsabilidades entre controlador, servicio y repositorio, lo que permite mantener el código modular y escalable:
+
+- El repositorio agrega un nuevo método: *getById(long id)*, que retorna un *MovieDTO*.
+
+    ```java
+    public interface MovieRepository {
+        List<MovieDto> getAll();
+        MovieDto getById(long id);
+    }
+    ```
+
+- Dentro de la implementación, se usa el método *findById* de Spring, el cual ya existe y permite buscar por clave primaria.
+- Este método retorna un *Optional*. Si la película no existe, se puede manejar devolviendo null con *orElse(null)*.
+- El siguiente paso es mapear la entidad encontrada a un *DTO* usando el mapper correspondiente, facilitando la transferencia de datos al cliente.
+
+    ```java
+    @Repository
+    public class MovieEntityRepository implements MovieRepository {
+    
+        private final CrudMovieEntity crudMovieEntity;
+        private final MovieMapper movieMapper;
+    
+        public MovieEntityRepository(CrudMovieEntity crudMovieEntity, MovieMapper movieMapper) {
+            this.crudMovieEntity = crudMovieEntity;
+            this.movieMapper = movieMapper;
+        }
+    
+        @Override
+        public List<MovieDto> getAll() {
+            return this.movieMapper.toDto(this.crudMovieEntity.findAll());
+        }
+    		// Caso de ejemplo
+        @Override
+        public MovieDto getById(long id) {
+            MovieEntity movieEntity = this.crudMovieEntity.findById(id).orElse(null);
+            return movieMapper.toDto(movieEntity);
+        }
+    }
+    ```
+
+    ```java
+    @Service
+    public class MovieService {
+    
+        private final MovieRepository movieRepository;
+    
+        public MovieService(MovieRepository movieRepository) {
+            this.movieRepository = movieRepository;
+        }
+    
+        public List<MovieDto> getAll() {
+            return this.movieRepository.getAll();
+        }
+    
+        public MovieDto getById(long id) {
+            return this.movieRepository.getById(id);
+        }
+    }
+    ```
+
+
+## **¿Cómo responde la API ante consultas específicas y cómo se valida la funcionalidad?**
+
+Con la ruta dinámica implementada, la API puede:
+
+- Responder a *.../movies/{id}* con un único recurso, permitiendo consultas como recibir sólo la información de "Interestelar" o "Avengers: Endgame".
+- Integrar la prueba de los endpoints mediante herramientas como Postman o directamente desde el navegador, validando que los recursos retornados correspondan con la base de datos.
+- La funcionalidad también permite volver a la lista completa simplemente consultando *.../movies* sin parámetros adicionales.
+
+El enfoque presentado facilita además el manejo de casos donde el recurso solicitado no existe, abriendo la puerta a personalizar respuestas más adelante usando *ResponseEntity* y los códigos HTTP adecuados. ¿Te gustaría compartir tu experiencia implementando rutas dinámicas o tienes algún caso de uso en mente?
+
+
+
+
 

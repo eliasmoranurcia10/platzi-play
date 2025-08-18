@@ -3,6 +3,7 @@ package com.example.platzi_play.persistence;
 import com.example.platzi_play.domain.dto.MovieDto;
 import com.example.platzi_play.domain.repository.MovieRepository;
 import com.example.platzi_play.persistence.crud.CrudMovieEntity;
+import com.example.platzi_play.persistence.entity.MovieEntity;
 import com.example.platzi_play.persistence.mapper.MovieMapper;
 import org.springframework.stereotype.Repository;
 
@@ -22,5 +23,11 @@ public class MovieEntityRepository implements MovieRepository {
     @Override
     public List<MovieDto> getAll() {
         return this.movieMapper.toDto(this.crudMovieEntity.findAll());
+    }
+
+    @Override
+    public MovieDto getById(long id) {
+        MovieEntity movieEntity = this.crudMovieEntity.findById(id).orElse(null);
+        return movieMapper.toDto(movieEntity);
     }
 }
