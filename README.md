@@ -1276,7 +1276,7 @@ Cuando necesitas devolver listas u otro tipo de información, igual puedes benef
     ```java
     @GetMapping
     public ResponseEntity<List<MovieDto>> getAll() {
-    		List<MovieDTO> listaDePeliculas = this.movieService.getAll()
+        List<MovieDTO> listaDePeliculas = this.movieService.getAll();
         return ResponseEntity.ok(listaDePeliculas);
     }
     ```
@@ -1285,5 +1285,141 @@ Cuando necesitas devolver listas u otro tipo de información, igual puedes benef
 Esto fortalece la coherencia y manejo de errores en todos los endpoints, haciendo el código más mantenible y robusto.
 
 ¿Tienes dudas sobre códigos HTTP o el uso de Response Entity en tus proyectos? Comparte tus experiencias o preguntas para seguir aprendiendo juntos.
+
+
+
+# 16-Crear endpoint POST para guardar películas en Spring Boot
+
+Creado: 18 de agosto de 2025 13:56
+ítem principal: 04-CALIDAD, DOCUMENTACIÓN Y PRODUCCIÓN (https://www.notion.so/04-CALIDAD-DOCUMENTACI-N-Y-PRODUCCI-N-248f5b42f7708063b8d9edd64e8b138e?pvs=21)
+
+Crear un endpoint que permita almacenar datos desde el frontend hacia el backend es fundamental para cualquier API moderna. Aquí descubrirás cómo implementar en Spring un endpoint POST, aprovechando patrones como DTO, mapeadores automáticos y buenas prácticas para la persistencia de datos.
+
+## **¿Cómo funciona el método POST en una API para guardar recursos?**
+
+El método POST permite **recibir información y agregar nuevos recursos** en la base de datos. Todo comienza dentro del controlador (`MovieController`), donde se define un método que:
+
+- Responde con un `ResponseEntity<MovieDTO>`.
+- Recibe como parámetro un objeto MovieDTO con la anotación `@RequestBody` para indicar que los datos llegan en el cuerpo de la petición.
+- Se anota con `@PostMapping` para asociar la ruta y el verbo HTTP.
+
+    ```java
+    @PostMapping
+    public ResponseEntity<MovieDto> add(@RequestBody MovieDto movieDto) {
+        MovieDto movieDtoResponse = this.movieService.add(movieDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body( movieDtoResponse );
+    }
+    ```
+
+
+Esto habilita la ruta `/movies` para guardar películas nuevas usando solicitudes POST con datos en formato JSON.
+
+## **¿Qué pasos hay que seguir para transformar y guardar los datos recibidos?**
+
+Para **persistir la información recibida** es fundamental preparar todos los componentes:
+
+- El repositorio (`CrudMovieEntity`) ofrece un método `save` que requiere una entidad (`MovieEntity`), no un DTO.
+
+    ```java
+    public interface MovieRepository {
+        List<MovieDto> getAll();
+        MovieDto getById(long id);
+        MovieDto save(MovieDto movieDto);
+    }
+    ```
+
+- Por ello, es necesario crear en el mapper (`MovieMapper`) una función `toEntity`, usando `@InheritInverseConfiguration` de MapStruct, que convierte un `MovieDTO` en una entidad lista para guardar.
+- El campo especial `genre` necesita un mapeo adicional usando `qualifiedByName`, ajustando de `stringToGenre` a `genreToString` según el sentido de la conversión.
+
+    ```java
+    @Mapper(componentModel = "spring", uses = {GenreMapper.class, StatusMapper.class})
+    public interface MovieMapper {
+        @Mapping(source = "titulo", target = "title")
+        @Mapping(source = "duracion", target = "duration")
+        @Mapping(source = "genero", target = "genre", qualifiedByName = "stringToGenre")
+        @Mapping(source = "fechaEstreno", target = "releaseData")
+        @Mapping(source = "clasificacion", target = "rating")
+        @Mapping(source = "estado", target = "status", qualifiedByName = "stringToBoolean")
+        MovieDto toDto(MovieEntity entity);
+        List<MovieDto> toDto(Iterable<MovieEntity> entities);
+        
+    		// convierte un MovieDTO en una entidad lista para guardar. 
+        @InheritInverseConfiguration
+        @Mapping(source = "genre", target = "genero", qualifiedByName = "genreToString")
+        @Mapping(source = "status", target = "estado", qualifiedByName = "booleanToString")
+        MovieEntity toEntity(MovieDto movieDto);
+    }
+    ```
+
+- Para asignar el `estado` por defecto al guardar, se establece manualmente como 'Disponible'. El campo `ID` no se debe definir, ya que la base de datos lo genera automáticamente.
+
+    ```java
+    @Repository
+    public class MovieEntityRepository implements MovieRepository {
+    
+       //...//
+    
+        @Override
+        public MovieDto save(MovieDto movieDto) {
+            MovieEntity movieEntity = this.movieMapper.toEntity(movieDto);
+            return this.movieMapper.toDto(this.crudMovieEntity.save(movieEntity));
+        }
+    }
+    ```
+
+
+Después de guardar la entidad, el resultado se transforma nuevamente a DTO para devolverlo al cliente.
+
+```java
+@Service
+public class MovieService {
+
+    //...//
+
+    public MovieDto add(MovieDto movieDto) {
+        return this.movieRepository.save(movieDto);
+    }
+}
+```
+
+## **¿Cuál es la forma correcta de responder una creación exitosa?**
+
+Es una buena práctica responder con el estado HTTP correcto cuando se crea un recurso. Aplicando Spring, puedes hacer esto así:
+
+- Utilizar `ResponseEntity.status(HttpStatus.CREATED)` para indicar que se creó algo nuevo.
+- El **cuerpo de la respuesta** es el DTO que representa la película efectivamente guardada.
+- No es indispensable retornar una URI específica si no está disponible: el enfoque flexible muestra cómo elegir entre soluciones y adaptarlas al flujo deseado.
+
+    ```java
+    @PostMapping
+        public ResponseEntity<MovieDto> add(@RequestBody MovieDto movieDto) {
+            MovieDto movieDtoResponse = this.movieService.add(movieDto);
+            return ResponseEntity.status(HttpStatus.CREATED).body( movieDtoResponse );
+        }
+    ```
+
+
+## **¿Cómo probar el endpoint POST y visualizar los resultados?**
+
+Para probar el endpoint, se recomienda emplear herramientas como **Postman**, ya que los navegadores no permiten enviar cuerpos en solicitudes POST de forma sencilla. Los pasos para realizar la prueba serían:
+
+- Enviar una solicitud POST a la ruta api/movies, indicando los campos de la película en **JSON** (example: título, duración, género, año de lanzamiento y rating).
+
+    ```json
+    {
+        "title": "Son como niños",
+        "duration": 102,
+        "genre": "COMEDY",
+        "releaseData": "2010-06-25",
+        "rating": 3.5,
+        "status": true
+    }
+    ```
+
+- Al recibir la respuesta con `HTTP 201 Created` y el nuevo `ID`, puedes consultar dicha película con un GET y corroborar que fue agregada correctamente.
+- También es posible recuperar el listado de todas las películas y verificar que la nueva se encuentra al final del listado.
+
+¿Has probado ya crear endpoints similares? Comparte tus experiencias y dudas para seguir creciendo juntos.
+
 
 
