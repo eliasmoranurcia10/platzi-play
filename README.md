@@ -1423,3 +1423,178 @@ Para probar el endpoint, se recomienda emplear herramientas como **Postman**, y
 
 
 
+# 17-Creación de endpoint PUT para actualizar películas en base de datos
+
+Creado: 19 de agosto de 2025 9:09
+ítem principal: 04-CALIDAD, DOCUMENTACIÓN Y PRODUCCIÓN (https://www.notion.so/04-CALIDAD-DOCUMENTACI-N-Y-PRODUCCI-N-248f5b42f7708063b8d9edd64e8b138e?pvs=21)
+
+Actualizar información en una base de datos es esencial para gestionar aplicaciones modernas de manera segura. En este resumen aprenderás cómo implementar de forma controlada y eficiente un *endpoint* PUT para modificar solo campos permitidos de una película, usando buenas prácticas y herramientas propias del desarrollo backend.
+
+## **¿Cómo controlar qué campos pueden modificarse con un endpoint PUT?**
+
+Permitir la edición parcial evita errores y mantiene la integridad de los datos. Se recomienda crear un **UpdateMovieDTO** exclusivo para las actualizaciones, que incluya únicamente los campos editables como título, fecha de lanzamiento y calificación (rating).
+
+- El ID y otros valores sensibles como género o duración quedan excluidos del UpdateMovieDTO.
+- Usar DTOs separados promueve la seguridad y claridad en la lógica de actualización.
+- Copiar la estructura de MovieDTO y modificar los campos según lo necesario facilita la implementación.
+
+    ```java
+    public record UpdateMovieDto(
+            String title,
+            LocalDate releaseData,
+            Double rating,
+            Boolean status
+    ) {}
+    ```
+
+
+## **¿Cómo diseñar el controlador para recibir las actualizaciones?**
+
+La **anotación @PutMapping** se utiliza para recibir el ID de la película como parte de la URL, y el cuerpo del request incluye el UpdateMovieDTO.
+
+- El ID se captura con la anotación *@PathVariable*.
+- El método controlador recibe ambos valores para identificar correctamente el registro y su información a modificar.
+- Esta separación asegura que la actualización se realice sobre la entidad correcta y con datos controlados.
+
+    ```java
+    @PutMapping("/{id}")
+    public ResponseEntity<MovieDto> update(
+            @PathVariable long id, 
+            @RequestBody UpdateMovieDto updateMovieDto
+    ) {
+        return ResponseEntity.ok(this.movieService.update(id, updateMovieDto));
+    }
+    ```
+
+
+## **¿Cómo validar la existencia y actualizar los datos en la base de datos?**
+
+Es fundamental comprobar que el registro existe antes de intentar cualquier cambio.
+
+- Utiliza el repositorio para buscar la entidad por ID con *findById*.
+- Si no existe, retorna null: así evitas intentos de modificar datos inexistentes.
+- Si existe, solo se asignan los nuevos valores permitidos con los métodos *set* correspondientes (título, release date y rating).
+- Se recomienda realizar conversiones de tipos, por ejemplo, de double a BigDecimal usando *BigDecimal.valueOf* si es necesario.
+
+    ```java
+    public interface MovieRepository {
+        List<MovieDto> getAll();
+        MovieDto getById(long id);
+        MovieDto save(MovieDto movieDto);
+        MovieDto update(long id, UpdateMovieDto updateMovieDto);
+    }
+    ```
+
+    ```java
+    @Repository
+    public class MovieEntityRepository implements MovieRepository {
+    
+        //...//
+        @Override
+        public MovieDto update(long id, UpdateMovieDto updateMovieDto) {
+    		    //Utiliza el repositorio para buscar la entidad por ID con *findById*.
+            MovieEntity movieEntity = this.crudMovieEntity.findById(id).orElse(null);
+    				//Si no existe, retorna null: 
+    				//así evitas intentos de modificar datos inexistentes
+            if(movieEntity == null) return null;
+    
+            this.movieMapper.updateEntityFromDto(updateMovieDto, movieEntity);
+            /*
+            movieEntity.setTitulo(updateMovieDto.title());
+            movieEntity.setFechaEstreno(updateMovieDto.releaseData());
+            movieEntity.setClasificacion(BigDecimal.valueOf(updateMovieDto.rating()));
+            movieEntity.setEstado(updateMovieDto.status()? "D":"N");
+            */
+            return this.movieMapper.toDto(this.crudMovieEntity.save(movieEntity));
+        }
+    }
+    ```
+
+
+## **¿Cómo automatizar la asignación de valores con Mapstruct y MappingTarget?**
+
+Para simplificar y hacer más seguro el mapeo entre el DTO y la entidad, Mapstruct permite crear un método especial:
+
+- Define un método en el MovieMapper llamado *updateEntityFromDTO* que recibe el UpdateMovieDTO y la entidad a modificar.
+- Agrega la anotación *@MappingTarget* al segundo parámetro para aplicar los cambios por referencia.
+- Usa la notación *@Mapping* para señalar qué campos mapea cada vez (target y source).
+- Este método no retorna valor (void), ya que modifica directamente la instancia recibida.
+
+    ```java
+    @Mapper(componentModel = "spring", uses = {GenreMapper.class, StatusMapper.class})
+    public interface MovieMapper {
+        //...//
+    
+        @Mapping(target = "titulo", source = "title")
+        @Mapping(target = "fechaEstreno", source = "releaseData")
+        @Mapping(target = "clasificacion", source = "rating")
+        @Mapping(target = "estado", source = "status", qualifiedByName = "booleanToString")
+        @Mapping(target = "id", ignore = true)
+        @Mapping(target = "duracion", ignore = true)
+        @Mapping(target = "genero", ignore = true)
+        void updateEntityFromDto(UpdateMovieDto updateMovieDto, @MappingTarget MovieEntity movieEntity);
+    }
+    ```
+
+
+## **¿Cómo integrar el flujo en el servicio y controlador?**
+
+El método *update* en el servicio centraliza la lógica:
+
+- Recibe el ID y UpdateMovieDTO.
+- Llama al repositorio para validar la existencia y actualizar solo los campos permitidos.
+
+    ```java
+    @Service
+    public class MovieService {
+    
+        //...//
+    
+        public MovieDto update(long id, UpdateMovieDto updateMovieDto) {
+            return this.movieRepository.update(id, updateMovieDto);
+        }
+    }
+    ```
+
+- El controlador responde con *ResponseEntity.ok* llamando al servicio de actualización.
+
+    ```java
+    @RestController
+    @RequestMapping("/movies")
+    public class MovieController {
+    		//...//
+        @PutMapping("/{id}")
+        public ResponseEntity<MovieDto> update(
+                @PathVariable long id,
+                @RequestBody UpdateMovieDto updateMovieDto
+        ) {
+            return ResponseEntity.ok(this.movieService.update(id, updateMovieDto));
+        }
+    }
+    ```
+
+- Las pruebas se pueden realizar con Postman enviando una petición PUT a la URL correspondiente, verificando la actualización correcta solo de los campos seleccionados.
+
+    ```
+    PUT > http://localhost:8090/platzi-play/api/movies/231
+    ```
+
+    ```json
+    {
+        "title": "Son como niños",
+        "releaseData": "2010-06-29",
+        "rating": 4.5,
+        "status": true
+    }
+    ```
+
+
+## **¿Qué retos adicionales pueden implementarse para gestionar recursos?**
+
+Como ejercicio recomendable, se propone crear un servicio que permita eliminar películas utilizando la anotación *@DeleteMapping* y el ID del recurso. Esto completa el ciclo de gestión CRUD y fortalece la API.
+
+Si tienes una solución diferente o quieres compartir resultados, la sección de comentarios está abierta para tus aportaciones y preguntas.
+
+
+
+

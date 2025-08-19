@@ -1,9 +1,8 @@
 package com.example.platzi_play.web.controller;
 
 import com.example.platzi_play.domain.dto.MovieDto;
+import com.example.platzi_play.domain.dto.UpdateMovieDto;
 import com.example.platzi_play.domain.service.MovieService;
-import com.example.platzi_play.persistence.crud.CrudMovieEntity;
-import com.example.platzi_play.persistence.entity.MovieEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -38,5 +37,13 @@ public class MovieController {
     public ResponseEntity<MovieDto> add(@RequestBody MovieDto movieDto) {
         MovieDto movieDtoResponse = this.movieService.add(movieDto);
         return ResponseEntity.status(HttpStatus.CREATED).body( movieDtoResponse );
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<MovieDto> update(
+            @PathVariable long id,
+            @RequestBody UpdateMovieDto updateMovieDto
+    ) {
+        return ResponseEntity.ok(this.movieService.update(id, updateMovieDto));
     }
 }
