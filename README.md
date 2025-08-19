@@ -1597,4 +1597,162 @@ Si tienes una solución diferente o quieres compartir resultados, la sección de
 
 
 
+# 18-Sistema de recomendaciones de películas con IA en Java
+
+Creado: 19 de agosto de 2025 17:12
+ítem principal: 04-CALIDAD, DOCUMENTACIÓN Y PRODUCCIÓN (https://www.notion.so/04-CALIDAD-DOCUMENTACI-N-Y-PRODUCCI-N-248f5b42f7708063b8d9edd64e8b138e?pvs=21)
+
+En este material te comparto cómo implementar un sistema de recomendaciones de películas usando **Java, LangChain4j e inteligencia artificial** en la plataforma Platzi Play. Aquí verás el potencial real de integrar inteligencia artificial para personalizar las sugerencias de contenido según los intereses del usuario, aprovechando la potencia de herramientas modernas y buenas prácticas en desarrollo backend.
+
+## **¿Cómo eliminar películas en la base de datos usando Java?**
+
+Eliminar películas es sencillo empleando la notación *@DeleteMapping*. El método recibe el ID de la película como variable de ruta y responde con un *ResponseEntity.ok().build()*, ya que el método delete no retorna datos. El uso de *Void* en el *ResponseEntity* es importante porque Delete no regresa un objeto, solo indica que la operación fue realizada.
+
+Para probar esta operación, se puede utilizar Postman enviando una petición *DELETE* al endpoint correspondiente con el ID de la película. Si el borrado es exitoso, se recibirá un status code 200 y el cuerpo estará vacío, confirmando la eliminación.
+
+```java
+public interface MovieRepository {
+    //...//
+    void delete(long id);
+}
+```
+
+```java
+@Repository
+public class MovieEntityRepository implements MovieRepository {
+		//...//
+    @Override
+    public void delete(long id) {
+        this.crudMovieEntity.deleteById(id);
+    }
+}
+```
+
+```java
+@Service
+public class MovieService {
+		//....//
+    public void delete(long id) {
+        this.movieRepository.delete(id);
+    }
+}
+```
+
+```java
+@RestController
+@RequestMapping("/movies")
+public class MovieController {
+		//...//
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable long id) {
+        this.movieService.delete(id);
+        return ResponseEntity.ok().build();
+    }
+}
+```
+
+## **¿Cómo funciona el sistema de sugerencias de películas potenciado por IA?**
+
+El corazón del sistema es el servicio **Platzi Play AiService**, donde se integra la anotación A*iService* de LangChain4j. El método principal, llamado *generateMovieSuggestions*, toma como entrada un mensaje del usuario (las preferencias) usando la anotación *@UserMessage*.
+
+Se define un mensaje de sistema personalizado para que la IA actúe como un experto en cine. El prompt restringe la respuesta a un máximo de tres películas y exige que solo se sugieran títulos disponibles en Plazy Play, asegurando recomendaciones relevantes y precisas.
+
+```java
+@AiService
+public interface PlatziPlayAiService {
+		//...//
+    @SystemMessage("""
+            Eres un experto en cine que recomienda películas personalizadas según los gustos del usuario
+            Debes recomendar máximo 3 películas.
+            No incluyas películas que estén por fuera de la plataforma de PlatziPlay
+            """)
+    String generateMoviesSuggestion(@UserMessage String userMessage);
+}
+```
+
+## **¿Cómo se estructuran las peticiones y la transferencia de datos del usuario?**
+
+El controlador recibe las preferencias del usuario como un objeto llamado **SuggestRequestDTO**, implementado como un *record* en Java. Este DTO solo contiene el campo *userPreference*, que captura los gustos expresados por la persona.
+
+```java
+public record SuggestRequestDto(
+        String userPreferences
+) {
+}
+```
+
+Se utiliza *@PostMapping* para definir el endpoint `/suggest`, el cual responde con una lista de sugerencias generadas dinámicamente.
+
+La inyección del servicio se realiza gracias a la anotación correspondiente y el uso de constructores. El controlador envía las preferencias del usuario al método *generateMovieSuggestions* del aiService y retorna la respuesta de forma segura y eficiente empleando *ResponseEntity*.
+
+```java
+@RestController
+@RequestMapping("/movies")
+public class MovieController {
+
+    //...//
+    private final PlatziPlayAiService aiService;
+
+    public MovieController(MovieService movieService, PlatziPlayAiService aiService) {
+        //...//
+        this.aiService = aiService;
+    }
+		//....//
+    @PostMapping("/suggest")
+    public ResponseEntity<String> generateMoviesSuggestion(
+            @RequestBody SuggestRequestDto suggestRequestDto
+    ) {
+        return ResponseEntity.ok(this.aiService.generateMoviesSuggestion(suggestRequestDto.userPreferences()));
+    }
+    //...//
+}
+```
+
+## **¿Cómo conoce la IA las películas disponibles en la plataforma?**
+
+Se aprovecha el método *getAll* del *MovieService*, anotado con *@Tool* de LangChain4j. Esta anotación convierte el método en una herramienta disponible para el modelo, permitiéndole consultar la lista actualizada de películas durante la generación de recomendaciones. El prompt asociado indica: "busca todas las películas que existan dentro de la plataforma", asegurando que las respuestas estén alineadas con el catálogo real.
+
+```java
+@Service
+public class MovieService {
+		//...//
+    @Tool("Busca todas las películas que existan dentro de la plataforma")
+    public List<MovieDto> getAll() {
+        return this.movieRepository.getAll();
+    }
+    //...//
+}
+```
+
+## **¿Qué resultados genera el sistema de recomendación con ejemplos prácticos?**
+
+El proceso completo se visualiza probando el endpoint `/suggest` desde Postman, enviando preferencias como *me gustan las películas del espacio o las que están ambientadas en Nueva York*. El resultado son recomendaciones personalizadas como "Inception", "Interestellar" y "Joker", explicando brevemente por qué se sugieren.
+
+```
+POST > http://localhost:8090/platzi-play/api/movies/suggest
+```
+
+```json
+{
+    "userPreferences": "Me gustan las películas del espacio o las que están ambientadas en Nueva York."
+}
+```
+
+Al introducir otras preferencias como *me gustan las animadas que sean emotivas*, el sistema recomienda "Coco", "Toy Story" y "Shrek". Las respuestas contienen información relevante extraída directamente de la base de datos como año, duración y descripción, mostrando la potencia del enfoque.
+
+El flujo interno incluye:
+
+- La petición del usuario es enviada al endpoint.
+- LangChain4j utiliza el rol de sistema y el mensaje del usuario para contextualizar la consulta.
+- El modelo llama automáticamente al *tool* que consulta las películas disponibles.
+- La IA selecciona sugerencias alineadas con los gustos del usuario y limita la respuesta a títulos de la plataforma.
+
+¿Te gustaría explorar más sobre LangChain4j o el API de OpenAI? Comparte en los comentarios cuáles otras integraciones o casos de uso te parecen interesantes.
+
+https://docs.langchain4j.dev/tutorials/tools/
+
+https://platzi.com/cursos/openai-api/
+
+
+
 
