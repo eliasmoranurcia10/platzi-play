@@ -2,6 +2,7 @@ package com.example.platzi_play.persistence;
 
 import com.example.platzi_play.domain.dto.MovieDto;
 import com.example.platzi_play.domain.dto.UpdateMovieDto;
+import com.example.platzi_play.domain.exception.MovieAlreadyExistsException;
 import com.example.platzi_play.domain.repository.MovieRepository;
 import com.example.platzi_play.persistence.crud.CrudMovieEntity;
 import com.example.platzi_play.persistence.entity.MovieEntity;
@@ -35,6 +36,10 @@ public class MovieEntityRepository implements MovieRepository {
 
     @Override
     public MovieDto save(MovieDto movieDto) {
+        // Verificar si existe el elemento previo
+        if(this.crudMovieEntity.findFirstByTitulo(movieDto.title()) != null ) {
+            throw new MovieAlreadyExistsException(movieDto.title());
+        }
         MovieEntity movieEntity = this.movieMapper.toEntity(movieDto);
         return this.movieMapper.toDto(this.crudMovieEntity.save(movieEntity));
     }
@@ -48,7 +53,7 @@ public class MovieEntityRepository implements MovieRepository {
         this.movieMapper.updateEntityFromDto(updateMovieDto, movieEntity);
         /*
         movieEntity.setTitulo(updateMovieDto.title());
-        movieEntity.setFechaEstreno(updateMovieDto.releaseData());
+        movieEntity.setFechaEstreno(updateMovieDto.releaseDate());
         movieEntity.setClasificacion(BigDecimal.valueOf(updateMovieDto.rating()));
         movieEntity.setEstado(updateMovieDto.status()? "D":"N");
         */

@@ -9,7 +9,7 @@ public record MovieDto(
         String title,
         Integer duration,
         Genre genre,
-        LocalDate releaseData,
+        LocalDate releaseDate,
         Double rating,
         Boolean status
 ) {

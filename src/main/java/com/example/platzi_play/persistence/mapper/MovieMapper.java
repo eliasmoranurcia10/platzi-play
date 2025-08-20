@@ -15,7 +15,7 @@ public interface MovieMapper {
     @Mapping(source = "titulo", target = "title")
     @Mapping(source = "duracion", target = "duration")
     @Mapping(source = "genero", target = "genre", qualifiedByName = "stringToGenre")
-    @Mapping(source = "fechaEstreno", target = "releaseData")
+    @Mapping(source = "fechaEstreno", target = "releaseDate")
     @Mapping(source = "clasificacion", target = "rating")
     @Mapping(source = "estado", target = "status", qualifiedByName = "stringToBoolean")
     MovieDto toDto(MovieEntity entity);
@@ -27,7 +27,7 @@ public interface MovieMapper {
     MovieEntity toEntity(MovieDto movieDto);
 
     @Mapping(target = "titulo", source = "title")
-    @Mapping(target = "fechaEstreno", source = "releaseData")
+    @Mapping(target = "fechaEstreno", source = "releaseDate")
     @Mapping(target = "clasificacion", source = "rating")
     @Mapping(target = "estado", source = "status", qualifiedByName = "booleanToString")
     @Mapping(target = "id", ignore = true)
