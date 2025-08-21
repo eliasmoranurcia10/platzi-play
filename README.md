@@ -2066,4 +2066,91 @@ Gracias a su flexibilidad y autonomía, ahora cualquier servicio que agregues qu
 
 
 
+# 22-Compilación de aplicación Java para producción con PostgreSQL
+
+Creado: 21 de agosto de 2025 17:23
+ítem principal: 04-CALIDAD, DOCUMENTACIÓN Y PRODUCCIÓN (https://www.notion.so/04-CALIDAD-DOCUMENTACI-N-Y-PRODUCCI-N-248f5b42f7708063b8d9edd64e8b138e?pvs=21)
+
+Preparar y desplegar tu API en un entorno real demanda atención especial a cada detalle técnico. Conectar tu aplicación Java a una base de datos en la nube y empacar el proyecto para producción permite que las pruebas sean precisas y el funcionamiento sea similar al despliegue final. Aquí, verás los pasos para lograrlo usando Render y PostgreSQL, recursos esenciales para cualquier desarrollador comprometido con aplicaciones modernas y escalables.
+
+## **¿Cómo se crea la base de datos PostgreSQL gratis en Render?**
+
+Render facilita crear una base de datos PostgreSQL dedicada en la nube. Primero, selecciona la opción de nueva base de datos desde el dashboard de Render. Debes definir:
+
+- **Nombre de la instancia**: Por ejemplo, platzi_play_db.
+- **Usuario y región**: Ajusta según tus preferencias, como "Alejandro" y Oregón.
+- **Versión**: Escoge la más reciente, aquí la 16.
+- **Plan gratuito**: Permite hasta 1GB de almacenamiento y caduca en 30 días.
+
+Recuerda que solo se puede tener una base gratuita por cuenta. Eligiendo Render, puedes testear en producción sin costos adicionales en la etapa inicial.
+
+## **¿Qué datos de conexión se utilizan para vincular la app con la base de datos?**
+
+Al terminar la creación, Render muestra la información de conexión:
+
+- **Usuario, contraseña y nombre de base de datos**: Específicos para tu instancia.
+- **Puerto y URLs**: Existen versiones interna y externa; normalmente se usa la externa para desarrollo.
+- **Formato JDBC**: La cadena debe adaptarse conforme a las propiedades requeridas por tu app Java.
+
+La cadena se añade en el archivo de propiedades de producción (por ejemplo, `application-prod.properties`) y se ajusta el usuario, contraseña y dirección del servidor, reemplazando el clásico localhost por el dominio de Render.
+
+```
+# Puerto de Ambiente de desarrollo
+server.port=8080
+
+# Spring Data JPA
+#postgresql://eliasmoran:a6oIldoOBmNRTiySCe8XCh6VKykHuPx3@dpg-d2joscemcj7s739fsv2g-a.oregon-postgres.render.com/platzi_play_db_en33
+spring.datasource.url=jdbc:postgresql://dpg-d2joscemcj7s739fsv2g-a.oregon-postgres.render.com:5432/platzi_play_db_en33
+spring.datasource.username=eliasmoran
+spring.datasource.password=a6oIldoOBmNRTiySCe8XCh6VKykHuPx3
+
+# Crear una tabla en la base de datos
+spring.jpa.hibernate.ddl-auto=update
+# Siempre inicializa los datos
+spring.sql.init.mode=always
+```
+
+## **¿Cómo se configura la app para funcionar en modo producción?**
+
+En el proyecto Java:
+
+1. En el archivo de propiedades, copia la URL y credenciales de la base de datos proporcionadas por Render.
+2. Elimina configuraciones innecesarias que solo atrasarían la operación en producción, como logs excesivos.
+3. Establece los perfiles activos para distinguir entre desarrollo y producción, usando la variable `spring.profiles.active=prod`.
+4. Actualiza el archivo `build.gradle` para asignar la versión final de la app.
+
+    ```
+    version = '1.0.0'
+    ```
+
+
+## **¿Qué pasos se siguen para compilar y ejecutar el JAR en ambiente productivo?**
+
+Con la configuración lista, procede así:
+
+- Sincroniza Gradle y ejecuta la tarea *bootJar* para empaquetar la app en un archivo JAR listo para producción.
+- Dirígete a la carpeta `/build/libs/`, donde estará el archivo generado, por ejemplo: `platzi-play-1.0.0.jar`.
+- Antes de ejecutar, valida que Java versión 21 esté instalada usando el comando `java -version`.
+- Lanza la app con el comando:
+- `java -Dspring.profiles.active=prod -jar platzi-play-1.0.0.jar`
+
+Esto conecta tu servicio a la nueva base de datos, activa el puerto designado (8080 para producción) y lo deja listo para recibir peticiones.
+
+## **¿Cómo se validan los datos y resultados en la base en la nube?**
+
+Ingresa a `localhost:8080/platzi-play/api/movies` para consultar los datos a través de la API. Si la base recién fue creada, al principio estará vacía. Para inicializarla con información:
+
+- Añade la configuración que permite cargar los datos del archivo `data.sql` durante el despliegue.
+
+    ```
+    spring.sql.init.mode=always
+    ```
+
+- Detén la app, recompila el JAR con el ajuste y vuelve a ejecutar el servicio.
+
+Así, los registros estarán disponibles y podrás operar con la API como en desarrollo, pero en configuración productiva y conectada a la nube.
+
+¿Te gustaría compartir cómo fue tu experiencia vinculando una app a una base de datos en la nube? Cuéntanos en los comentarios.
+
+
 
