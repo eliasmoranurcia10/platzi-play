@@ -260,7 +260,7 @@ Las variables en *application.properties* pueden ser utilizadas directamente e
 
 - Cambios en las variables del properties se reflejan al reiniciar la app, mostrando los resultados, por ejemplo, en las respuestas de la API.
 
-  ![image.png](image.png)
+
 
 
 ## **¿Cómo se configuran logs y otros parámetros específicos según el entorno?**
@@ -1984,6 +1984,85 @@ public class RestExceptionHandler {
 - Realiza pruebas simulando envíos incorrectos desde herramientas como *Postman* para garantizar la cobertura de escenarios.
 
 ¿Ya implementaste validaciones en todos los puntos de entrada de tu servicio? Cuéntanos cómo mejoró la calidad de tus endpoints o comparte tu reto en los comentarios.
+
+
+
+# 21-Documentación automática de APIs con OpenAPI en Spring Boot
+
+Creado: 21 de agosto de 2025 15:38
+ítem principal: 04-CALIDAD, DOCUMENTACIÓN Y PRODUCCIÓN (https://www.notion.so/04-CALIDAD-DOCUMENTACI-N-Y-PRODUCCI-N-248f5b42f7708063b8d9edd64e8b138e?pvs=21)
+
+Una documentación clara y profesional en una API REST asegura facilidad de uso, comprensión y adopción tanto por personas como por otros sistemas. Te comparto cómo integrar OpenAPI en un proyecto Spring Boot para generar documentación automática, personalizable y directamente ligada al código de tu aplicación.
+
+## **¿Cómo generar documentación para una API con OpenAPI en Spring Boot?**
+
+Una API profesional no solo cumple su función, también debe ser sencilla de consumir y entender. Para lograrlo, puedes integrar **OpenAPI** en tu proyecto. Solo necesitas agregar una dependencia al archivo *build.gradle* siguiendo el formato *grupo:artefacto:versión*, basado en la documentación oficial de springdoc.org. Tras sincronizar y lanzar la aplicación, la documentación estará disponible en *localhost:8090/platzi-play/api/swagger-ui.html*. Se genera de forma automática y muestra todos los métodos disponibles, permitiendo incluso probarlos desde el navegador.
+
+```groovy
+dependencies{
+		//...code...//
+    //Doc OpenAPI
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.10'
+    //...code...//
+}
+```
+
+### ¿Por qué es útil la documentación generada automáticamente?
+
+- Refleja todos los endpoints construidos en el proyecto.
+- Permite probar llamadas a la API directamente desde el navegador.
+- Muestra todos los parámetros y posibles respuestas.
+- Incluye validaciones y reglas definidas por anotaciones en el código, como campos obligatorios y rangos aceptados.
+
+## **¿Cómo personalizar la documentación de la API en Spring Boot?**
+
+Tu API puede tener descripciones a medida para cada endpoint y parámetro. Por ejemplo, usando la anotación *@Tag* de *io.swagger.v3.oas.annotations*, se define un nombre y descripción para un controlador. Esto mejora el entendimiento y la presentación de los recursos en la documentación. Además, cada método puede ser anotado con *@Operation* y describir brevemente su función, lo que espera recibir y retornar, así como las posibles respuestas, usando *@ApiResponse*.
+
+- *@ApiResponse* permite definir el código de respuesta (como 200 u 404) y su significado, ajustando los ejemplos y el cuerpo de respuesta según corresponda.
+- El parámetro de un endpoint puede anotarse con *@Parameter* y agregar descripción y ejemplo, lo que ayuda a quienes consumen la API a comprender cada campo.
+
+Al personalizar estos detalles, la documentación habla el idioma y contexto deseado, mostrando títulos y descripciones adecuadas.
+
+```java
+@RestController
+@RequestMapping("/movies")
+@Tag(name = "Movies", description = "Operaciones acerca de películas de PlatziMovies")
+public class MovieController {
+		//...code...//
+    @Operation(
+            summary = "Obtener una película por su identificador",
+            description = "Retorna la película que coincida con el identificador enviado",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Película encontrada"),
+                    @ApiResponse(responseCode = "404", description = "Película no encontrada", content = @Content),
+            }
+    )
+    @GetMapping("/{id}")
+    public ResponseEntity<MovieDto> getById(
+            @Parameter(description = "Identificador de la película a recuperar", example = "9")
+            @PathVariable long id
+    ) {
+        MovieDto movieDto = this.movieService.getById(id);
+        if(movieDto == null) {
+           return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(movieDto);
+    }
+    //...code...//
+}
+```
+
+## **¿Qué ventajas ofrece la documentación automática para el desarrollo y la integración?**
+
+La documentación con **OpenAPI** automatiza la actualización de las descripciones cuando tu proyecto crece, sin requerir trabajo adicional en cada cambio. Los beneficios principales son:
+
+- **Facilita las pruebas** de métodos y validaciones desde la interfaz Swagger UI.
+- **Mejora el trabajo en equipo**, porque todos acceden a un único manual actualizado.
+- **Simplifica la integración** con otros sistemas y plataformas.
+
+Gracias a su flexibilidad y autonomía, ahora cualquier servicio que agregues quedará reflejado y podrás compartir el uso correcto de tu API de forma clara y estandarizada.
+
+¿Tienes dudas, inquietudes o quieres contar cómo personalizarías los endpoints de tu API? Comparte tu experiencia y sigamos aprendiendo juntos.
 
 
 
