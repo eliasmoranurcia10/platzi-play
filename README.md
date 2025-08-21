@@ -1868,4 +1868,123 @@ Abordar dichos escenarios eleva la calidad de la API y evita respuestas ambiguas
 ¿Te animas a implementar el control para edición o eliminación de películas inexistentes? ¡Comparte cómo lo resolviste y mantén una API cada vez más robusta!
 
 
+# 20-Validación automática de datos en APIs con Spring Boot
+
+Creado: 21 de agosto de 2025 0:12
+ítem principal: 04-CALIDAD, DOCUMENTACIÓN Y PRODUCCIÓN (https://www.notion.so/04-CALIDAD-DOCUMENTACI-N-Y-PRODUCCI-N-248f5b42f7708063b8d9edd64e8b138e?pvs=21)
+
+Contar con **validaciones automáticas en las APIs** es clave para la calidad y seguridad de tus servicios. En este resumen aprenderás cómo aprovechar *Spring Boot* y las anotaciones de *jakarta.validation* para controlar los datos que recibe tu aplicación, evitando errores comunes y mejorando la experiencia de quienes consumen tus endpoints.
+
+## **¿Por qué validar los datos de entrada en APIs es fundamental?**
+
+Validar los datos desde el inicio evita que información errónea llegue al núcleo de la lógica de la aplicación. Así, tu API responde de manera constructiva ante intentos de enviar datos incompletos o inconsistentes.
+
+- Mejora la experiencia del usuario final al recibir mensajes claros.
+- Previene fallos antes de que afecten procesos lógicos internos.
+- Facilita el mantenimiento y robustez del código.
+
+## **¿Cómo agregar una capa de validación en Spring Boot usando anotaciones?**
+
+Se recomienda **agregar la dependencia "Validation"** en tu proyecto mediante *Spring Initializer* (start.spring.io). Para ello, busca *bean validation with Hibernate Validator* o agrega 'Spring Boot Starter Validation' en tu archivo build.gradle y actualiza las dependencias.
+
+```groovy
+dependencies {
+		//...//
+    // Validation
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    //...//
+}
+```
+
+Luego, utiliza las anotaciones en el *DTO* que representa el cuerpo de la petición:
+
+- Aplica la anotación *@Valid* directamente en el parámetro que recibe el *request body* (por ejemplo, un objeto update movie DTO).
+
+    ```java
+    @RestController
+    @RequestMapping("/movies")
+    public class MovieController {
+    		//...code...//
+        @PutMapping("/{id}")
+        public ResponseEntity<MovieDto> update(
+                @PathVariable long id,
+                // Uso de la anotación @Valid
+                @RequestBody @Valid UpdateMovieDto updateMovieDto
+        ) {
+            return ResponseEntity.ok(this.movieService.update(id, updateMovieDto));
+        }
+    		//...code...//
+    }
+    ```
+
+- Entre las validaciones más útiles están:
+- `@NotBlank` para campos obligatorios que no pueden ser vacíos (ejemplo: título).
+- `@PastOrPresent` para fechas que no pueden ser futuras (ejemplo: fecha de lanzamiento).
+- `@Min` y `@Max` para restringir valores numéricos (ejemplo: rating entre 0 y 5).
+- Puedes definir mensajes personalizados para cada validación, lo que permite ofrecer retroalimentación clara como "El título es obligatorio" o "El rating no puede ser mayor que cinco".
+
+    ```java
+    public record UpdateMovieDto(
+            @NotBlank(message = "El titulo es obligatorio")
+            String title,
+    
+            @PastOrPresent(message = "La fecha de lanzamiento debe ser anterior a la actual")
+            LocalDate releaseDate,
+    
+            @Min(value = 0, message = "El rating no puede ser menor que 0")
+            @Max(value = 5, message = "El rating no puede ser mayor que 5")
+            Double rating,
+    
+            @NotNull(message = "Colocar true o false")
+            Boolean status
+    ) {}
+    ```
+
+
+## **¿Cómo reportar errores de validación y manejar excepciones en tu API?**
+
+Cuando se incumple alguna de estas reglas, Spring lanza una excepción *method argument not valid exception*. Para manejarla de forma adecuada:
+
+- Implementa un método anotado con *@ExceptionHandler* para capturar esta excepción específica.
+- Devuelve un objeto *ResponseEntity* con una lista de errores detallada por cada campo que falló.
+- Extrae la información relevante mediante `getBindingResult().getFieldErrors()` y agrega mensaje y campo a dicho listado.
+
+Este enfoque permite que el cliente reciba una lista con los problemas específicos, en vez de una respuesta genérica sin detalles.
+
+Además, es recomendable agregar un manejador general para captar cualquier otra excepción no controlada (mediante *@ExceptionHandler(Exception.class)*), y responder con un *internal server error* y un mensaje explicativo. Así, ninguna excepción quedará sin procesar, y siempre sabrás qué está fallando.
+
+```java
+@RestControllerAdvice
+public class RestExceptionHandler {
+		//...code...//
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<List<Error>> handleException(MethodArgumentNotValidException ex) {
+        List<Error> errors = new ArrayList<>();
+
+        ex.getBindingResult().getFieldErrors().forEach(error -> {
+            errors.add(new Error(error.getField(), error.getDefaultMessage()));
+        });
+
+        return ResponseEntity.badRequest().body(errors);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Error> handleException(Exception ex){
+        Error error = new Error("unknow", ex.getMessage());
+        return ResponseEntity.internalServerError().body(error);
+    }
+}
+```
+
+## **¿Qué prácticas adicionales potencian la robustez de tu API con Spring Validation?**
+
+- Crea validadores para todos los endpoints críticos, no solo para actualizaciones.
+- Ofrece siempre mensajes orientados al usuario para facilitar la solución del problema.
+- Lleva seguimiento de los fallos en un log para futuras auditorías o depuración.
+- Realiza pruebas simulando envíos incorrectos desde herramientas como *Postman* para garantizar la cobertura de escenarios.
+
+¿Ya implementaste validaciones en todos los puntos de entrada de tu servicio? Cuéntanos cómo mejoró la calidad de tus endpoints o comparte tu reto en los comentarios.
+
+
+
 
