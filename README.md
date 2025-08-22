@@ -2153,4 +2153,76 @@ Así, los registros estarán disponibles y podrás operar con la API como en des
 ¿Te gustaría compartir cómo fue tu experiencia vinculando una app a una base de datos en la nube? Cuéntanos en los comentarios.
 
 
+# 23-Despliegue de API Java con Docker en Render
+
+Creado: 21 de agosto de 2025 19:44
+ítem principal: 04-CALIDAD, DOCUMENTACIÓN Y PRODUCCIÓN (https://www.notion.so/04-CALIDAD-DOCUMENTACI-N-Y-PRODUCCI-N-248f5b42f7708063b8d9edd64e8b138e?pvs=21)
+
+Llevar una API a la nube es un paso crucial para transformar un proyecto local en un servicio público y listo para crecer. En este material, aprenderás cómo **desplegar tu API en Render usando Docker**, asegurando que el código esté disponible en Internet para cualquier usuario interesado. Este proceso es clave dentro del ciclo de desarrollo profesional de software backend.
+
+## **¿Cómo configurar un Dockerfile para una aplicación Java en Render?**
+
+Un **Dockerfile** funciona como una receta que le indica a Docker cómo construir la imagen de la aplicación. Hay dos etapas esenciales:
+
+- **Etapa de compilación:** Se utiliza una imagen específica de *Gradle* (por ejemplo, 8.14.2-jdk21), alineada con la versión definida en *Gradle wrapper*.
+- Se copia el contenido de la aplicación al contenedor (`/app`) y se ejecuta el comando *gradle boot jar*.
+
+    ```docker
+    # Etapa 1: Build con Gradle 8.14.2 y JDK 21 (Compilacion)
+    FROM gradle:8.14.3-jdk-21-and-24 AS build
+    COPY --chown=gradle:gradle . /app
+    WORKDIR /app
+    RUN gradle bootJar --no-daemon
+    ```
+
+- **Etapa de ejecución:** Se utiliza una imagen de *JDK21* (en el ejemplo, *Eclipse Temurin*) para correr la aplicación.
+- Se trasladan los archivos generados como `.jar` desde el build a la ruta preferida y se ejecuta el archivo con el perfil de producción tal cual como se configuró localmente.
+
+    ```docker
+    # Etapa 2: Runtime con JDK 21 (Ejecucion)
+    FROM eclipse-temurin:21-jdk
+    WORKDIR /app
+    COPY --from=build /app/build/libs/*.jar platzi_play.jar
+    EXPOSE 8080
+    ENTRYPOINT ["java", "-Dspring.profiles.active=prod", "-jar", "platzi_play.jar"]
+    ```
+
+
+Así, Docker encapsula la app y asegura la consistencia entre ambientes.
+
+## **¿Qué aspectos debes considerar en la configuración de Render y la base de datos?**
+
+Render facilita el despliegue ofreciendo capas gratuitas y manejo sencillo de repositorios. Algunos aspectos importantes a considerar:
+
+- El archivo *application.properties* requiere ajustar la URL de la base de datos. Al ejecutarse dentro de Render, la cadena se simplifica, quitando referencias externas (como `oregon-postgres.render.com`).
+- Mantener la referencia del puerto en la URL luego de remover el prefijo.
+- Subir los cambios a GitHub es necesario, pues Render obtiene el código directamente del repositorio.
+- Se recomienda agregar variables de entorno si tu aplicación las requiere, como *API keys*.
+
+    ```
+    # Spring Data JPA
+    #postgresql://eliasmoran:a6oIldoOBmNRTiySCe8XCh6VKykHuPx3@dpg-d2joscemcj7s739fsv2g-a.oregon-postgres.render.com/platzi_play_db_en33
+    #postgresql://eliasmoran:a6oIldoOBmNRTiySCe8XCh6VKykHuPx3@dpg-d2joscemcj7s739fsv2g-a/platzi_play_db_en33
+    spring.datasource.url=jdbc:postgresql://dpg-d2joscemcj7s739fsv2g-a:5432/platzi_play_db_en33
+    spring.datasource.username=eliasmoran
+    spring.datasource.password=a6oIldoOBmNRTiySCe8XCh6VKykHuPx3
+    ```
+
+
+Render mostrará en su consola cada paso del proceso de compilación y despliegue, permitiendo visualizar advertencias relevantes, por ejemplo, *spring-jpa-open-in-view*, relacionada con la gestión de conexiones a la base de datos durante la renderización de respuestas.
+
+## **¿Cómo validar y acceder a tu API tras el despliegue en la nube?**
+
+Una vez desplegada la aplicación y completadas las configuraciones, Render te proporcionará una URL pública para acceder al servicio. Aquí algunos puntos clave:
+
+- La URL puede devolver un código 404 si no se incluye el contexto definido en *application.properties*.
+- Recuerda usar los endpoints configurados (ejemplo: `/movies` para comprobar la lista de películas o `/hello` para saludar, según lo definido durante el desarrollo).
+- Si aparece un error inesperado, confirma que estés invocando los servicios correctamente y que el contexto de ruta sea el adecuado.
+
+Este proceso marca el paso de un desarrollo local a un proyecto en producción, preparado para escalar y adaptarse a retos futuros.
+
+¿Ya probaste subir tu propia API? Cuéntanos tu experiencia y comparte tus aprendizajes para seguir creciendo juntos.
+
+
+
 
